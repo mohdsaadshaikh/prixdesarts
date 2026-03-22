@@ -22,7 +22,6 @@ export default function Index() {
   const mouse  = useRef({ x: 0, y: 0 });
   const smooth = useRef({ x: 0, y: 0 });
   const refs   = useRef<(HTMLDivElement | null)[]>([]);
-  const tsRef  = useRef(0);
 
   useEffect(() => {
     const h = (e: MouseEvent) => {
@@ -40,7 +39,6 @@ export default function Index() {
     const PAX = 40, PAY = 14;
 
     const loop = (ts: number) => {
-      tsRef.current = ts;
       smooth.current.x += (mouse.current.x - smooth.current.x) * 0.04;
       smooth.current.y += (mouse.current.y - smooth.current.y) * 0.04;
       const sx = smooth.current.x;
@@ -51,7 +49,7 @@ export default function Index() {
         const layer = LAYERS[i];
         const tx = sx * PAX * layer.p * 4 + (layer.dx * ts * 0.04);
         const ty = sy * PAY * layer.p * 4;
-        el.style.transform = `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px))`;
+        el.style.transform = `translate(-50%, -50%) translate(${tx}px, ${ty}px)`;
       });
 
       raf = requestAnimationFrame(loop);
@@ -62,53 +60,42 @@ export default function Index() {
   }, []);
 
   return (
-    <>
-      <style>{`
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        html, body, #root { width: 100%; height: 100%; overflow: hidden; background: #060608; }
-      `}</style>
-
-      <div style={{ position: "fixed", inset: 0, background: "#060608", overflow: "hidden" }}>
-        
-        {LAYERS.map((layer, i) => (
-          <div
-            key={layer.src}
-            ref={el => { refs.current[i] = el; }}
+    <div style={{ position: "fixed", inset: 0, overflow: "hidden", background: "#060608" }}>
+      {LAYERS.map((layer, i) => (
+        <div
+          key={i}
+          ref={(el) => (refs.current[i] = el)}
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            width: "120vw",
+            height: "120vh",
+            transform: "translate(-50%, -50%)",
+            willChange: "transform",
+          }}
+        >
+          <img
+            src={layer.src}
+            alt=""
             style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              width: "110%",
-              height: "110%",
-              transform: "translate(-50%, -50%)",
-              willChange: "transform",
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              objectPosition: "center",
             }}
-          >
-            <img
-              src={layer.src}
-              alt=""
-              draggable={false}
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                objectPosition: "center",
-                display: "block",
-                pointerEvents: "none",
-                userSelect: "none",
-              }}
-            />
-          </div>
-        ))}
-
-        <div style={{
+          />
+        </div>
+      ))}
+      <div
+        style={{
           position: "absolute",
           inset: 0,
-          background: "radial-gradient(ellipse 80% 80% at 50% 52%, transparent 0%, transparent 30%, rgba(0,0,0,0.5) 70%, rgba(0,0,0,0.92) 100%)",
+          background:
+            "radial-gradient(ellipse 80% 80% at 50% 52%, transparent 0%, transparent 30%, rgba(0,0,0,0.5) 70%, rgba(0,0,0,0.92) 100%)",
           pointerEvents: "none",
-          zIndex: 20,
-        }}/>
-      </div>
-    </>
+        }}
+      />
+    </div>
   );
 }
