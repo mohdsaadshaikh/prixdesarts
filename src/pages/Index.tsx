@@ -1,4 +1,5 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 const LAYERS = [
   { src: "/layer_skyline.webp",        p: 0.02, dx: 0     },
@@ -22,6 +23,23 @@ export default function Index() {
   const mouse = useRef({ x: 0, y: 0 });
   const smooth = useRef({ x: 0, y: 0 });
   const refs = useRef<(HTMLDivElement | null)[]>([]);
+  const [mountNode, setMountNode] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    const el = document.createElement("div");
+    el.style.position = "fixed";
+    el.style.inset = "0";
+    el.style.width = "100vw";
+    el.style.height = "100vh";
+    el.style.zIndex = "9999";
+    el.style.pointerEvents = "none";
+    document.body.appendChild(el);
+    setMountNode(el);
+    return () => {
+      document.body.removeChild(el);
+      setMountNode(null);
+    };
+  }, []);
 
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
@@ -51,19 +69,19 @@ export default function Index() {
         if (!el) continue;
 
         const layer = LAYERS[i];
-        let tx = sx * PAX * layer.p * 4 + layer.dx * ts * 0.04;
+        const tx = sx * PAX * layer.p * 4 + layer.dx * ts * 0.04;
         let ty = sy * PAY * layer.p * 4;
 
-        // Drift lent (exemple simple, continue)
-        if (layer.src === "/layer_clouds.webp") tx += Math.sin(ts * 0.00015) * 8;
-        if (layer.src === "/layer_boats.webp")  tx += ts * 0.00002 * 60;
-
-        // Eau "fake wave" par translate (pas déformation géométrique)
+        // Drift + eau (toujours en translate, sans déformation géométrique)
+        if (layer.src === "/layer_clouds.webp") ty += Math.sin(ts * 0.0012) * 1;
+        if (layer.src === "/layer_boats.webp") {
+          el.style.transform = `translate3d(${tx + ts * 0.0012}px, ${ty}px, 0) scale(1.04)`;
+          continue;
+        }
         if (layer.src === "/layer_seine.webp" || layer.src === "/layer_water.webp") {
-          ty += Math.sin(ts * 0.0012) * 6;
+          ty += Math.sin(ts * 0.0012) * 6; // vague verticale
         }
 
-        // scale légèrement pour éviter les bords lors des translations
         el.style.transform = `translate3d(${tx}px, ${ty}px, 0) scale(1.04)`;
       }
 
@@ -74,18 +92,10 @@ export default function Index() {
     return () => cancelAnimationFrame(raf);
   }, []);
 
-  return (
-    <div
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100vw",
-        height: "100vh",
-        overflow: "hidden",
-        background: "#060608",
-      }}
-    >
+  if (!mountNode) return null;
+
+  return createPortal(
+    <div style={{ position: "absolute", inset: 0, overflow: "hidden", background: "#060608" }}>
       {LAYERS.map((layer, i) => (
         <div
           key={layer.src}
@@ -94,10 +104,7 @@ export default function Index() {
           }}
           style={{
             position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
+            inset: 0,
             willChange: "transform",
             overflow: "hidden",
           }}
@@ -130,6 +137,7 @@ export default function Index() {
           pointerEvents: "none",
         }}
       />
-    </div>
+    </div>,
+    mountNode
   );
 }
