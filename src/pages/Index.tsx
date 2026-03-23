@@ -1,25 +1,3 @@
-/* Base layout stable pour les calques fixed */
-html,
-body {
-  height: 100%;
-  width: 100%;
-  margin: 0;
-  padding: 0;
-  background: #060608;
-  overflow: hidden; /* évite scroll parasite qui peut influencer le calcul */
-}
-
-#root {
-  height: 100%;
-  width: 100%;
-}
-
-/* Petit confort pour éviter des effets de baseline */
-img {
-  display: block;
-  max-width: none;
-}
-
 import { useEffect, useRef } from "react";
 
 const LAYERS = [
