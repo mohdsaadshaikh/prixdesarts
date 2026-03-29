@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MONUMENTS, MONUMENT_ORDER, type MonumentDef } from '@/lib/constants';
 
@@ -7,32 +7,15 @@ interface MonumentOverlayProps {
   onMonumentClick: (monument: MonumentDef) => void;
 }
 
-/** Hitbox size in vw */
 const HITBOX_W = 8;
 const HITBOX_H = 6;
 
+/**
+ * Monument markers: luminous white rings rotating slowly.
+ * Rest: opacity 0.15. Hover: opacity 0.7, ring accelerates, beam emerges.
+ */
 const MonumentOverlay = ({ visible, onMonumentClick }: MonumentOverlayProps) => {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const [beamProgress, setBeamProgress] = useState<Record<string, number>>({});
-
-  // Animate beam scaleY on hover
-  useEffect(() => {
-    if (!hoveredId) return;
-    const start = Date.now();
-    let raf: number;
-    const animate = () => {
-      const t = Math.min((Date.now() - start) / 1600, 1);
-      // cubic-bezier(0.16,1,0.3,1) approximation
-      const eased = 1 - Math.pow(1 - t, 3);
-      setBeamProgress(prev => ({ ...prev, [hoveredId]: eased }));
-      if (t < 1) raf = requestAnimationFrame(animate);
-    };
-    raf = requestAnimationFrame(animate);
-    return () => {
-      cancelAnimationFrame(raf);
-      setBeamProgress(prev => ({ ...prev, [hoveredId]: 0 }));
-    };
-  }, [hoveredId]);
 
   if (!visible) return null;
 
@@ -42,7 +25,6 @@ const MonumentOverlay = ({ visible, onMonumentClick }: MonumentOverlayProps) => 
     <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 25 }}>
       {monuments.map((m) => {
         const isHovered = hoveredId === m.id;
-        const progress = beamProgress[m.id] || 0;
 
         return (
           <div key={m.id}>
@@ -61,100 +43,85 @@ const MonumentOverlay = ({ visible, onMonumentClick }: MonumentOverlayProps) => 
               onClick={() => onMonumentClick(m)}
             />
 
-            {/* Ground halo */}
+            {/* Luminous ring */}
+            <svg
+              style={{
+                position: 'absolute',
+                left: `${m.pos.x}%`,
+                top: `${m.pos.y}%`,
+                transform: 'translate(-50%, -50%)',
+                width: '64px',
+                height: '64px',
+                pointerEvents: 'none',
+              }}
+              viewBox="0 0 64 64"
+            >
+              <circle
+                cx="32"
+                cy="32"
+                r="30"
+                fill="none"
+                stroke="#fff8e7"
+                strokeWidth="0.5"
+                opacity={isHovered ? 0.7 : 0.15}
+                style={{
+                  transition: 'opacity 0.4s ease',
+                }}
+              >
+                <animateTransform
+                  attributeName="transform"
+                  type="rotate"
+                  from="0 32 32"
+                  to="360 32 32"
+                  dur={isHovered ? '8s' : '12s'}
+                  repeatCount="indefinite"
+                />
+              </circle>
+            </svg>
+
+            {/* Beam on hover */}
             <AnimatePresence>
               {isHovered && (
                 <motion.div
                   className="absolute pointer-events-none"
                   style={{
                     left: `${m.pos.x}%`,
-                    top: `${m.pos.y + 2}%`,
-                    transform: 'translate(-50%, -50%)',
-                    width: '12vw',
-                    height: '4vw',
-                    borderRadius: '50%',
-                    background: 'radial-gradient(ellipse, rgba(201,168,76,0.09) 0%, transparent 70%)',
+                    bottom: `${100 - m.pos.y + 3}%`,
+                    transform: 'translateX(-50%)',
+                    width: '2px',
+                    height: '25vh',
+                    transformOrigin: 'bottom center',
+                    background: `linear-gradient(to top, rgba(255,248,231,0.15), rgba(255,248,231,0.03), transparent)`,
                   }}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.8 }}
+                  initial={{ scaleY: 0, opacity: 0 }}
+                  animate={{ scaleY: 1, opacity: 1 }}
+                  exit={{ scaleY: 0, opacity: 0, transition: { duration: 0.3 } }}
+                  transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
                 />
               )}
             </AnimatePresence>
 
-            {/* Light beam SVG */}
+            {/* Label on hover */}
             <AnimatePresence>
-              {isHovered && progress > 0 && (
+              {isHovered && (
                 <motion.div
                   className="absolute pointer-events-none"
                   style={{
                     left: `${m.pos.x}%`,
-                    top: `${m.pos.y - 30}%`,
+                    top: `${m.pos.y - 8}%`,
                     transform: 'translateX(-50%)',
-                    width: '3vw',
-                    height: '30vh',
-                    transformOrigin: 'bottom center',
-                  }}
-                  initial={{ opacity: 0, scaleY: 0 }}
-                  animate={{ opacity: 1, scaleY: progress }}
-                  exit={{ opacity: 0, scaleY: 0, transition: { duration: 0.4 } }}
-                  transition={{ duration: 0.1 }}
-                >
-                  <svg width="100%" height="100%" viewBox="0 0 60 200" preserveAspectRatio="none">
-                    <defs>
-                      <filter id={`bloom-${m.id}`}>
-                        <feGaussianBlur stdDeviation="4" result="blur" />
-                        <feMerge>
-                          <feMergeNode in="blur" />
-                          <feMergeNode in="SourceGraphic" />
-                        </feMerge>
-                      </filter>
-                      <linearGradient id={`beamGrad-${m.id}`} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="rgba(201,168,76,0)" />
-                        <stop offset="30%" stopColor="rgba(201,168,76,0.15)" />
-                        <stop offset="70%" stopColor="rgba(201,168,76,0.25)" />
-                        <stop offset="100%" stopColor="rgba(201,168,76,0.05)" />
-                      </linearGradient>
-                    </defs>
-                    {/* Cone shape */}
-                    <polygon
-                      points="25,0 35,0 50,200 10,200"
-                      fill={`url(#beamGrad-${m.id})`}
-                      filter={`url(#bloom-${m.id})`}
-                    />
-                    {/* Central filament */}
-                    <line
-                      x1="30" y1="0" x2="30" y2="200"
-                      stroke="rgba(201,168,76,0.3)"
-                      strokeWidth="0.5"
-                      opacity={0.5 + Math.sin(Date.now() * 0.005) * 0.3}
-                    />
-                  </svg>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Label at 70% beam height */}
-            <AnimatePresence>
-              {isHovered && progress > 0.3 && (
-                <motion.div
-                  className="absolute pointer-events-none"
-                  style={{
-                    left: `${m.pos.x + 2}%`,
-                    top: `${m.pos.y - 20}%`,
                   }}
                   initial={{ opacity: 0 }}
-                  animate={{ opacity: 0.5 }}
-                  exit={{ opacity: 0, transition: { duration: 0.4 } }}
+                  animate={{ opacity: 0.6 }}
+                  exit={{ opacity: 0, transition: { duration: 0.3 } }}
                   transition={{ duration: 0.5 }}
                 >
                   <span
-                    className="font-display italic uppercase"
+                    className="font-display italic"
                     style={{
-                      fontSize: '0.65rem',
+                      fontSize: '0.75rem',
                       letterSpacing: '0.15em',
-                      color: '#C9A84C',
+                      color: '#f0ece4',
                       whiteSpace: 'nowrap',
                     }}
                   >

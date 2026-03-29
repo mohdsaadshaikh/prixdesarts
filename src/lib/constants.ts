@@ -1,8 +1,17 @@
 export const COLORS = {
-  black: '#0A0A0A',
-  gold: '#C9A84C',
-  warmLight: '#FFD699',
-  white: '#FFFFFF',
+  black: '#080808',
+  warmLight: '#fff8e7',
+  textLight: '#f0ece4',
+  white: '#ffffff',
+};
+
+/** Per-room accent colors */
+export const ROOM_ACCENTS: Record<string, string> = {
+  eiffel: '#b8c8d4',    // Steel blue
+  institut: '#d4b483',   // Pale gold
+  opera: '#e8d5c4',      // Rose ivory
+  grandPalais: '#c9a35a', // Amber
+  louvre: '#ffffff',      // Pure white
 };
 
 export interface MonumentDef {
@@ -18,6 +27,7 @@ export interface MonumentDef {
   spaceBody: string;
   spaceTotem: string;
   spaceConnector: string;
+  accentColor: string;
   spaceExtra?: string;
   spaceCategories?: string[];
   spaceEmail?: string;
@@ -25,45 +35,47 @@ export interface MonumentDef {
 }
 
 export const MONUMENTS: Record<string, MonumentDef> = {
-  louvre: {
-    id: 'louvre',
-    label: "L'Institution",
-    buildingName: 'Pyramide du Louvre',
-    pos: { x: 57, y: 68 },
-    approachDuration: 6,
-    spaceTitle: "L'INSTITUTION",
-    spaceSurtitle: 'I',
-    spaceSubtitle: 'Le Prix',
-    spaceTotem: 'TEMPS',
-    spaceConnector: 'ACTE FONDATEUR',
-    spaceBody: "Quand la création contemporaine s'inscrit dans le temps long.\n\nLes Prix des Arts et de la Culture offrent un cadre institutionnel exigeant et pérenne, dédié à la reconnaissance des œuvres, des parcours et des figures dont l'influence marque durablement notre époque.\n\nUn espace de dialogue entre création, transmission et temps long.",
-    spaceFooter: ['Paris — Novembre 2026'],
+  eiffel: {
+    id: 'eiffel',
+    label: 'La Lumière',
+    buildingName: 'Tour Eiffel',
+    pos: { x: 34, y: 45 },
+    approachDuration: 5,
+    spaceTitle: 'LA LUMIÈRE',
+    spaceSurtitle: 'V',
+    spaceSubtitle: 'Le Jury',
+    spaceTotem: 'LUMIÈRE',
+    spaceConnector: 'CONSTELLATION',
+    accentColor: '#b8c8d4',
+    spaceBody: "Le jury présenté comme une constellation — membres positionnés comme des étoiles, reliés par de fines lignes.\n\nLe Président du Jury au centre, légèrement agrandi.",
   },
   institut: {
     id: 'institut',
-    label: 'La Consécration',
+    label: "L'Institution",
     buildingName: 'Institut de France',
     pos: { x: 19, y: 49 },
     approachDuration: 5,
-    spaceTitle: 'LA CONSÉCRATION',
+    spaceTitle: "L'INSTITUTION",
     spaceSurtitle: 'II',
-    spaceSubtitle: 'Distinctions',
-    spaceTotem: 'AURA',
-    spaceConnector: 'EXCELLENCE',
-    spaceBody: "Reconnaître les œuvres et les parcours qui façonnent durablement le paysage culturel contemporain.\n\nAffirmer la légitimité de figures dont l'influence dépasse leur discipline d'origine.\n\nContribuer à la transmission d'une mémoire culturelle vivante, inscrite dans le temps long.",
+    spaceSubtitle: 'Histoire',
+    spaceTotem: 'TEMPS',
+    spaceConnector: 'CHRONOLOGIE',
+    accentColor: '#d4b483',
+    spaceBody: "Une chronologie verticale — l'histoire du Prix de 2021 à aujourd'hui.\n\nChaque édition : son année en grand, son moment clé, son jury.",
   },
   opera: {
     id: 'opera',
-    label: 'La Traversée',
+    label: 'La Scène',
     buildingName: 'Opéra Garnier',
     pos: { x: 44, y: 41 },
     approachDuration: 5.5,
-    spaceTitle: 'LA TRAVERSÉE',
+    spaceTitle: 'LA SCÈNE',
     spaceSurtitle: 'III',
-    spaceSubtitle: 'Mémoire',
+    spaceSubtitle: 'Archives',
     spaceTotem: 'SILLAGE',
     spaceConnector: 'ARCHIVES VISUELLES',
-    spaceBody: "D'une intimité partagée à une résonance publique.\n\nLa métamorphose d'un cercle en une scène ouverte sur le monde, tissée de rencontres décisives et de dialogues silencieux.",
+    accentColor: '#e8d5c4',
+    spaceBody: "Les 5 éditions précédentes présentées comme des loges d'opéra — rectangles verticaux légèrement inclinés en perspective CSS 3D.",
   },
   grandPalais: {
     id: 'grandPalais',
@@ -76,9 +88,49 @@ export const MONUMENTS: Record<string, MonumentDef> = {
     spaceSubtitle: 'Héritage',
     spaceTotem: 'MÉMOIRE',
     spaceConnector: 'AD VITAM',
-    spaceBody: "La responsabilité de la mémoire, c'est bâtir pour l'invisible et le lointain.\n\nS'associer aux Prix des Arts et de la Culture, c'est inscrire son action dans une démarche de transmission, de rayonnement culturel international et de responsabilité patrimoniale.\n\nUn engagement fondé sur le sens, la légitimité et le temps long.",
+    accentColor: '#c9a35a',
+    spaceBody: "La salle la plus « galerie » — alternance pleine largeur d'images N&B et blocs de texte éditorial.\n\nCitations de lauréats en italique, légèrement décalées à droite.",
     spaceEmail: 'bureau@prixdesarts.org',
+  },
+  louvre: {
+    id: 'louvre',
+    label: 'La Consécration',
+    buildingName: 'Pyramide du Louvre',
+    pos: { x: 57, y: 68 },
+    approachDuration: 6,
+    spaceTitle: 'LA CONSÉCRATION',
+    spaceSurtitle: 'I',
+    spaceSubtitle: 'Lauréats',
+    spaceTotem: 'SACRE',
+    spaceConnector: 'TRIPTYQUE',
+    accentColor: '#ffffff',
+    spaceBody: "Triptyque horizontal de profils lauréats : émergent / confirmé / institution.\n\nChaque panneau défile horizontalement. Nom du lauréat en très grand Cormorant Garamond 300.",
+    spaceFooter: ['Paris — Novembre 2026'],
   },
 };
 
-export const MONUMENT_ORDER = ['louvre', 'institut', 'opera', 'grandPalais'];
+export const MONUMENT_ORDER = ['eiffel', 'institut', 'opera', 'grandPalais', 'louvre'];
+
+/** City light points for the illumination sequence */
+export const CITY_LIGHTS = [
+  { x: 12, y: 62, delay: 0 },
+  { x: 18, y: 58, delay: 100 },
+  { x: 22, y: 65, delay: 200 },
+  { x: 28, y: 55, delay: 300 },
+  { x: 33, y: 60, delay: 400 },
+  { x: 38, y: 52, delay: 500 },
+  { x: 42, y: 63, delay: 600 },
+  { x: 47, y: 48, delay: 700 },
+  { x: 52, y: 57, delay: 800 },
+  { x: 55, y: 70, delay: 900 },
+  { x: 60, y: 54, delay: 1000 },
+  { x: 64, y: 61, delay: 1100 },
+  { x: 68, y: 50, delay: 1200 },
+  { x: 72, y: 58, delay: 1300 },
+  { x: 76, y: 63, delay: 1400 },
+  { x: 80, y: 47, delay: 1500 },
+  { x: 84, y: 55, delay: 1600 },
+  { x: 88, y: 60, delay: 1700 },
+  { x: 91, y: 52, delay: 1800 },
+  { x: 95, y: 58, delay: 1900 },
+];

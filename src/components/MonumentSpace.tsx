@@ -6,6 +6,7 @@ import SalleLouvre from './salle/SalleLouvre';
 import SalleInstitut from './salle/SalleInstitut';
 import SalleOpera from './salle/SalleOpera';
 import SalleGrandPalais from './salle/SalleGrandPalais';
+import SalleEiffel from './salle/SalleEiffel';
 
 interface MonumentSpaceProps {
   monument: MonumentDef | null;
@@ -39,6 +40,7 @@ const MonumentSpace = ({ monument, visible, onClose, onNavigate }: MonumentSpace
       case 'institut': return <SalleInstitut monument={monument} />;
       case 'opera': return <SalleOpera monument={monument} />;
       case 'grandPalais': return <SalleGrandPalais monument={monument} />;
+      case 'eiffel': return <SalleEiffel monument={monument} />;
       default: return null;
     }
   };

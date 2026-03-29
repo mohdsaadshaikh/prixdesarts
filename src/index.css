@@ -1,22 +1,4 @@
-html,
-body {
-  height: 100%;
-  min-height: 100vh;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-}
-
-#root {
-  height: 100%;
-  min-height: 100vh;
-}
-
-#root > * {
-  height: 100%;
-}
-
-@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Montserrat:wght@300;400&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -24,44 +6,43 @@ body {
 
 @layer base {
   :root {
-    --background: 0 0% 0%;
-    --foreground: 0 0% 95%;
+    --background: 0 0% 3%;
+    --foreground: 40 20% 93%;
     --card: 0 0% 5%;
-    --card-foreground: 0 0% 95%;
+    --card-foreground: 40 20% 93%;
     --popover: 0 0% 5%;
-    --popover-foreground: 0 0% 95%;
-    --primary: 43 72% 58%;
+    --popover-foreground: 40 20% 93%;
+    --primary: 40 20% 93%;
     --primary-foreground: 0 0% 3%;
     --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 85%;
+    --secondary-foreground: 40 20% 85%;
     --muted: 0 0% 8%;
     --muted-foreground: 0 0% 55%;
-    --accent: 43 72% 58%;
+    --accent: 43 50% 50%;
     --accent-foreground: 0 0% 3%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --border: 0 0% 15%;
     --input: 0 0% 15%;
-    --ring: 43 72% 58%;
+    --ring: 40 20% 93%;
     --radius: 0rem;
 
-    --gold: 43 72% 58%;
-    --gold-dim: 43 40% 30%;
-    --gold-glow: 43 80% 70%;
-    --ceremony-white: 0 0% 100%;
-    --deep-black: 0 0% 2%;
+    --warm-light: 40 80% 94%;
+    --text-light: 37 24% 92%;
+    --deep-black: 0 0% 3%;
 
-    --font-display: "Playfair Display", "Didot", "Times New Roman", serif;
+    --font-display: "Cormorant Garamond", "Didot", "Times New Roman", serif;
     --font-body: "Cormorant Garamond", "Georgia", serif;
+    --font-mono: "Montserrat", sans-serif;
 
     --sidebar-background: 0 0% 3%;
-    --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 43 72% 58%;
+    --sidebar-foreground: 40 20% 93%;
+    --sidebar-primary: 40 20% 93%;
     --sidebar-primary-foreground: 0 0% 3%;
     --sidebar-accent: 0 0% 8%;
-    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-accent-foreground: 40 20% 93%;
     --sidebar-border: 0 0% 15%;
-    --sidebar-ring: 43 72% 58%;
+    --sidebar-ring: 40 20% 93%;
   }
 }
 
@@ -75,12 +56,7 @@ body {
     overflow: hidden;
     cursor: default;
   }
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
+  h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
   }
 }
@@ -92,26 +68,8 @@ body {
   .font-body {
     font-family: var(--font-body);
   }
-  .text-gold {
-    color: hsl(var(--gold));
-  }
-  .text-gold-dim {
-    color: hsl(var(--gold-dim));
-  }
-  .glow-gold {
-    text-shadow:
-      0 0 20px hsl(var(--gold) / 0.4),
-      0 0 40px hsl(var(--gold) / 0.2);
-  }
-  .light-beam {
-    background: linear-gradient(
-      180deg,
-      hsl(var(--gold) / 0) 0%,
-      hsl(var(--gold) / 0.6) 30%,
-      hsl(var(--gold) / 0.8) 50%,
-      hsl(var(--gold) / 0.6) 70%,
-      hsl(var(--gold) / 0) 100%
-    );
+  .font-mono-alt {
+    font-family: var(--font-mono);
   }
 }
 
@@ -123,14 +81,13 @@ html {
   scrollbar-width: none;
 }
 
-/* Base layout for parallax layers */
-html,
-body {
+/* Base layout */
+html, body {
   height: 100%;
   width: 100%;
   margin: 0;
   padding: 0;
-  background: #060608;
+  background: #080808;
   overflow: hidden;
 }
 
