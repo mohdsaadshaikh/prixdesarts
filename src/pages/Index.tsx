@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
 import IntroSequence from "@/components/IntroSequence";
+import CityLights from "@/components/CityLights";
+import MonumentOverlay from "@/components/MonumentOverlay";
+import BottomSignature from "@/components/BottomSignature";
 
 const LAYERS = [
   { src: "/layer_sky.webp",            p: 0.02, dx: 0 },
@@ -27,7 +30,11 @@ export default function Index() {
   const smooth = useRef({ x: 0, y: 0 });
   const layerRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [mountNode, setMountNode] = useState<HTMLElement | null>(null);
+
   const [introComplete, setIntroComplete] = useState(false);
+  const [lightsActive, setLightsActive] = useState(false);
+  const [monumentsVisible, setMonumentsVisible] = useState(false);
+  const [logoVisible, setLogoVisible] = useState(false);
 
   // Portal mount
   useEffect(() => {
@@ -82,14 +89,24 @@ export default function Index() {
     return () => cancelAnimationFrame(raf);
   }, []);
 
+  // Intro complete → illumination cascade
   const handleIntroComplete = useCallback(() => {
     setIntroComplete(true);
+    setLightsActive(true);
+    // Monuments appear after lights settle (~2.5s)
+    setTimeout(() => setMonumentsVisible(true), 2500);
+    // Logo emerges after ~4s
+    setTimeout(() => setLogoVisible(true), 4000);
   }, []);
 
   if (!mountNode) return null;
 
   return createPortal(
-    <div style={{ position: "fixed", inset: 0, overflow: "hidden", background: "#080808", pointerEvents: "auto" }}>
+    <div style={{
+      position: "fixed", inset: 0, overflow: "hidden",
+      background: "#080808", pointerEvents: "auto",
+      cursor: monumentsVisible ? 'crosshair' : 'default',
+    }}>
       {/* Parallax layers */}
       {LAYERS.map((layer, i) => (
         <div
@@ -117,7 +134,39 @@ export default function Index() {
         background: "radial-gradient(ellipse 80% 80% at 50% 52%, transparent 0%, transparent 30%, rgba(0,0,0,0.5) 70%, rgba(0,0,0,0.92) 100%)",
       }} />
 
-      {/* Intro sequence (covers panorama until complete) */}
+      {/* City lights illumination */}
+      <CityLights active={lightsActive} />
+
+      {/* Edition plaque */}
+      {introComplete && (
+        <div
+          className="font-mono-alt uppercase"
+          style={{
+            position: 'absolute',
+            left: '42%', top: '58%',
+            fontSize: '0.6rem', letterSpacing: '0.35em',
+            color: 'rgba(240,236,228,0.55)',
+            fontWeight: 300,
+            pointerEvents: 'none', zIndex: 20,
+            textAlign: 'center', lineHeight: '1.8',
+            opacity: 0,
+            animation: 'fadePlaque 2s ease forwards 2s',
+          }}
+        >
+          NOVEMBRE 2026<br />PARIS
+        </div>
+      )}
+
+      {/* Monument rings + beams */}
+      <MonumentOverlay
+        visible={monumentsVisible}
+        onMonumentClick={() => {}}
+      />
+
+      {/* Logo */}
+      <BottomSignature visible={logoVisible} />
+
+      {/* Intro sequence */}
       {!introComplete && (
         <IntroSequence onComplete={handleIntroComplete} />
       )}
