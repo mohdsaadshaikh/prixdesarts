@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
+import IntroSequence from "@/components/IntroSequence";
 
 const LAYERS = [
   { src: "/layer_sky.webp",            p: 0.02, dx: 0 },
@@ -26,7 +27,9 @@ export default function Index() {
   const smooth = useRef({ x: 0, y: 0 });
   const layerRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [mountNode, setMountNode] = useState<HTMLElement | null>(null);
+  const [introComplete, setIntroComplete] = useState(false);
 
+  // Portal mount
   useEffect(() => {
     const el = document.createElement("div");
     el.style.cssText = "position:fixed;inset:0;width:100vw;height:100vh;z-index:9999;pointer-events:none;";
@@ -35,6 +38,7 @@ export default function Index() {
     return () => { document.body.removeChild(el); setMountNode(null); };
   }, []);
 
+  // Mouse tracking
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
       mouse.current = {
@@ -46,6 +50,7 @@ export default function Index() {
     return () => window.removeEventListener("mousemove", onMove);
   }, []);
 
+  // Parallax loop
   useEffect(() => {
     let raf = 0;
     const loop = (ts: number) => {
@@ -77,10 +82,15 @@ export default function Index() {
     return () => cancelAnimationFrame(raf);
   }, []);
 
+  const handleIntroComplete = useCallback(() => {
+    setIntroComplete(true);
+  }, []);
+
   if (!mountNode) return null;
 
   return createPortal(
     <div style={{ position: "fixed", inset: 0, overflow: "hidden", background: "#080808", pointerEvents: "auto" }}>
+      {/* Parallax layers */}
       {LAYERS.map((layer, i) => (
         <div
           key={layer.src}
@@ -100,10 +110,17 @@ export default function Index() {
           />
         </div>
       ))}
+
+      {/* Vignette */}
       <div style={{
         position: "absolute", inset: 0, pointerEvents: "none",
         background: "radial-gradient(ellipse 80% 80% at 50% 52%, transparent 0%, transparent 30%, rgba(0,0,0,0.5) 70%, rgba(0,0,0,0.92) 100%)",
       }} />
+
+      {/* Intro sequence (covers panorama until complete) */}
+      {!introComplete && (
+        <IntroSequence onComplete={handleIntroComplete} />
+      )}
     </div>,
     mountNode,
   );
