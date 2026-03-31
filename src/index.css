@@ -100,3 +100,8 @@ img {
   display: block;
   max-width: none;
 }
+
+@keyframes fadePlaque {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
