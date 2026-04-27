@@ -13,13 +13,18 @@ interface JuryMember {
 }
 
 const JURY: JuryMember[] = [
-  { name: 'Claire Dumont', title: 'Présidente', x: 50, y: 45, isPresident: true },
-  { name: 'Jean Moreau', title: 'Académicien', x: 25, y: 28 },
-  { name: 'Sophie Klein', title: "Critique d'art", x: 72, y: 28 },
-  { name: 'Paul Bernard', title: 'Commissaire', x: 18, y: 60 },
-  { name: 'Hélène Voss', title: 'Directrice', x: 80, y: 58 },
-  { name: 'Marc Girard', title: 'Musicologue', x: 40, y: 72 },
-  { name: 'Isabelle Roy', title: 'Chorégraphe', x: 62, y: 70 },
+  { name: 'Claire Dumont', title: 'Présidente', x: 50, y: 42, isPresident: true },
+  { name: 'Jean Moreau', title: 'Académicien', x: 28, y: 24 },
+  { name: 'Sophie Klein', title: "Critique d'art", x: 75, y: 24 },
+  { name: 'Paul Bernard', title: 'Commissaire', x: 15, y: 55 },
+  { name: 'Hélène Voss', title: 'Directrice', x: 85, y: 55 },
+  { name: 'Marc Girard', title: 'Musicologue', x: 35, y: 80 },
+  { name: 'Isabelle Roy', title: 'Chorégraphe', x: 65, y: 80 },
+];
+
+const CONSTELLATION_LINES = [
+  [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6],
+  [1, 2], [1, 3], [2, 4], [3, 5], [4, 6], [5, 6]
 ];
 
 /** SVG halos — steel blue at structural node positions */
@@ -98,24 +103,28 @@ const SalleEiffel = ({ monument }: { monument: MonumentDef }) => {
 
       {/* SVG connecting lines */}
       <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 11 }}>
-        {JURY.slice(1).map((member, i) => (
-          <motion.line
-            key={i}
-            x1={`${president.x}%`}
-            y1={`${president.y}%`}
-            x2={`${member.x}%`}
-            y2={`${member.y}%`}
-            stroke="rgba(184,200,212,0.08)"
-            strokeWidth="0.5"
-            style={{
-              opacity: hoveredMember === i + 1 ? 0.3 : 0.08,
-              transition: 'opacity 0.4s ease',
-            }}
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 1.2, delay: 1.4 + i * 0.1 }}
-          />
-        ))}
+        {CONSTELLATION_LINES.map(([from, to], i) => {
+          const p1 = JURY[from];
+          const p2 = JURY[to];
+          const isRelated = hoveredMember === from || hoveredMember === to;
+          return (
+            <motion.line
+              key={i}
+              x1={`${p1.x}%`}
+              y1={`${p1.y}%`}
+              x2={`${p2.x}%`}
+              y2={`${p2.y}%`}
+              stroke={isRelated ? "#b8c8d4" : "rgba(184,200,212,0.15)"}
+              strokeWidth={isRelated ? "1" : "0.5"}
+              style={{
+                transition: 'all 0.6s cubic-bezier(0.25,1,0.5,1)',
+              }}
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: 1 }}
+              transition={{ duration: 1.5, delay: 1 + i * 0.05 }}
+            />
+          );
+        })}
       </svg>
 
       {/* Jury member nodes */}
@@ -143,19 +152,38 @@ const SalleEiffel = ({ monument }: { monument: MonumentDef }) => {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 1.2 + i * 0.1 }}
           >
+            {/* Node Halo */}
+            <motion.div
+              className="absolute inset-0 rounded-full pointer-events-none"
+              style={{
+                background: 'radial-gradient(circle, rgba(184,200,212,0.2) 0%, transparent 70%)',
+                width: '60px',
+                height: '60px',
+                left: '50%',
+                top: '50%',
+                x: '-50%',
+                y: '-50%',
+              }}
+              animate={{
+                scale: isHovered ? [1, 1.2, 1] : 1,
+                opacity: isHovered ? 1 : 0,
+              }}
+              transition={{ duration: 2, repeat: Infinity }}
+            />
+
             {/* Dot */}
             <div
               style={{
                 width: `${dotSize}px`,
                 height: `${dotSize}px`,
                 borderRadius: '50%',
-                background: member.isPresident ? '#b8c8d4' : 'rgba(184,200,212,0.7)',
+                background: member.isPresident ? '#b8c8d4' : 'rgba(255,255,255,0.9)',
                 boxShadow: isHovered
-                  ? '0 0 12px rgba(184,200,212,0.5), 0 0 24px rgba(184,200,212,0.2)'
+                  ? '0 0 15px rgba(184,200,212,0.8), 0 0 30px rgba(184,200,212,0.3)'
                   : member.isPresident
-                    ? '0 0 8px rgba(184,200,212,0.3)'
-                    : 'none',
-                transition: 'box-shadow 0.4s ease',
+                    ? '0 0 10px rgba(184,200,212,0.4)'
+                    : '0 0 5px rgba(255,255,255,0.2)',
+                transition: 'all 0.4s ease',
               }}
             />
 

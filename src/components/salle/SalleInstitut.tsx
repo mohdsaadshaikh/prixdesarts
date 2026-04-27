@@ -24,9 +24,27 @@ const DomeHalos = () => (
         <stop offset="100%" stopColor="#d4b483" stopOpacity="0" />
       </radialGradient>
     </defs>
+    
+    {/* Radiating lines pattern */}
+    <g style={{ opacity: 0.15 }}>
+      {[...Array(12)].map((_, i) => (
+        <motion.line
+          key={i}
+          x1="500" y1="600"
+          x2={500 + Math.cos((i * 15 - 165) * Math.PI / 180) * 1200}
+          y2={600 + Math.sin((i * 15 - 165) * Math.PI / 180) * 1200}
+          stroke="#d4b483"
+          strokeWidth="0.5"
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 2.5, delay: 0.5 + i * 0.1 }}
+        />
+      ))}
+    </g>
+
     <motion.rect
       width="1000" height="600" fill="url(#halo-gold1)"
-      animate={{ opacity: [0.6, 0.9, 0.6], scale: [1, 1.15, 1] }}
+      animate={{ opacity: [0.6, 0.9, 0.6], scale: [1, 1.1, 1] }}
       transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
     />
     <motion.rect

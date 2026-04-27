@@ -24,11 +24,11 @@ const MetroCapsule = ({ visible, activeMonumentId, onStationClick, panoramaMode 
 
   return (
     <motion.div
-      className="fixed z-[45] flex items-center justify-center"
+      className="fixed z-[45]"
       style={{
         bottom: '3vh',
         left: '50%',
-        transform: 'translateX(-50%)',
+        x: '-50%',
       }}
       initial={{ opacity: 0, y: 20 }}
       animate={{

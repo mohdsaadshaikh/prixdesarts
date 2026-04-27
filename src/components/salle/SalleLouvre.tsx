@@ -101,8 +101,42 @@ const SalleLouvre = ({ monument }: { monument: MonumentDef }) => {
           />
         </div>
 
+        {/* Background Ghosted Labels */}
+        <div className="absolute inset-0 pointer-events-none flex items-center justify-around z-0 overflow-hidden">
+          {['PRIX', 'LAURÉATS', 'ÉDITION'].map((label, i) => (
+            <motion.span
+              key={label}
+              className="font-display select-none"
+              style={{
+                fontSize: '25vw',
+                color: 'rgba(255,255,255,0.015)',
+                fontWeight: 900,
+                letterSpacing: '-0.05em',
+              }}
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1.5, delay: 0.8 + i * 0.2 }}
+            >
+              {label}
+            </motion.span>
+          ))}
+        </div>
+
+        {/* Pyramid Geometry Overlay */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" style={{ opacity: 0.15 }}>
+          <motion.path
+            d="M 0 600 L 500 100 L 1000 600 M 200 600 L 500 100 L 800 600 M 400 600 L 500 100 L 600 600"
+            fill="none"
+            stroke="#ffffff"
+            strokeWidth="0.5"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ duration: 2, ease: "easeInOut" }}
+          />
+        </svg>
+
         {/* Triptych — 3 equal panels */}
-        <div className="flex-1 flex flex-col md:flex-row items-stretch mt-8 md:mt-0">
+        <div className="flex-1 flex flex-col md:flex-row items-stretch mt-8 md:mt-0 relative z-10">
           {LAUREATES.map((laureate, i) => {
             const isHovered = hoveredPanel === i;
             return (
@@ -112,12 +146,13 @@ const SalleLouvre = ({ monument }: { monument: MonumentDef }) => {
                 style={{
                   flex: isHovered ? 1.5 : 1,
                   borderTop: isHovered ? '2px solid rgba(255,255,255,0.6)' : '2px solid transparent',
-                  borderRight: i < 2 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                  borderLeft: i > 0 ? '1px solid rgba(255,255,255,0.06)' : 'none',
                   transition: 'flex 0.6s cubic-bezier(0.25,1,0.5,1), border-top-color 0.4s ease',
                   padding: '3rem 2rem',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'flex-end',
+                  background: isHovered ? 'linear-gradient(to bottom, transparent, rgba(255,255,255,0.02))' : 'transparent',
                 }}
                 onMouseEnter={() => setHoveredPanel(i)}
                 onMouseLeave={() => setHoveredPanel(null)}

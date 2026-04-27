@@ -7,19 +7,19 @@ const GrainOverlay = () => (
       <filter id="grain">
         <feTurbulence
           type="fractalNoise"
-          baseFrequency="0.65"
+          baseFrequency="0.6"
           numOctaves="3"
           stitchTiles="stitch"
         />
         <feColorMatrix
           type="matrix"
-          values="1 0 0 0 0.02
-                  0 1 0 0 0.01
+          values="1 0 0 0 0
+                  0 1 0 0 0
                   0 0 1 0 0
                   0 0 0 1 0"
         />
       </filter>
-      <rect width="100%" height="100%" filter="url(#grain)" opacity="0.035" />
+      <rect width="100%" height="100%" filter="url(#grain)" opacity="0.08" />
     </svg>
   </div>
 );

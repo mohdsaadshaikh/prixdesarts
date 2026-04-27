@@ -12,42 +12,31 @@ const EDITIONS = [
   { year: 2021, label: 'Édition' },
 ];
 
-/** SVG halos — warm ivory at chandelier positions */
+/** SVG halos — warm ivory floating stage lights */
 const ChandelierHalos = () => (
   <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1000 600" preserveAspectRatio="none">
     <defs>
-      <radialGradient id="halo-ivory1" cx="50%" cy="10%" r="22%">
-        <stop offset="0%" stopColor="#e8d5c4" stopOpacity="0.18" />
-        <stop offset="100%" stopColor="#e8d5c4" stopOpacity="0" />
-      </radialGradient>
-      <radialGradient id="halo-ivory2" cx="25%" cy="20%" r="15%">
-        <stop offset="0%" stopColor="#e8d5c4" stopOpacity="0.1" />
-        <stop offset="100%" stopColor="#e8d5c4" stopOpacity="0" />
-      </radialGradient>
-      <radialGradient id="halo-ivory3" cx="75%" cy="20%" r="15%">
-        <stop offset="0%" stopColor="#e8d5c4" stopOpacity="0.1" />
-        <stop offset="100%" stopColor="#e8d5c4" stopOpacity="0" />
-      </radialGradient>
-      <radialGradient id="halo-ivory4" cx="30%" cy="40%" r="12%">
-        <stop offset="0%" stopColor="#e8d5c4" stopOpacity="0.06" />
-        <stop offset="100%" stopColor="#e8d5c4" stopOpacity="0" />
-      </radialGradient>
-      <radialGradient id="halo-ivory5" cx="70%" cy="40%" r="12%">
-        <stop offset="0%" stopColor="#e8d5c4" stopOpacity="0.06" />
-        <stop offset="100%" stopColor="#e8d5c4" stopOpacity="0" />
-      </radialGradient>
-      <radialGradient id="halo-ivory6" cx="50%" cy="55%" r="18%">
-        <stop offset="0%" stopColor="#e8d5c4" stopOpacity="0.08" />
-        <stop offset="100%" stopColor="#e8d5c4" stopOpacity="0" />
-      </radialGradient>
+      {[1, 2, 3, 4, 5, 6].map(i => (
+        <radialGradient key={i} id={`halo-ivory${i}`} cx={`${20 + Math.random() * 60}%`} cy={`${10 + Math.random() * 40}%`} r="15%">
+          <stop offset="0%" stopColor="#e8d5c4" stopOpacity="0.1" />
+          <stop offset="100%" stopColor="#e8d5c4" stopOpacity="0" />
+        </radialGradient>
+      ))}
     </defs>
+    
+    {/* Floating halos */}
     {[1, 2, 3, 4, 5, 6].map((n, i) => (
-      <motion.rect
+      <motion.circle
         key={n}
-        width="1000" height="600"
+        r={60 + Math.random() * 120}
         fill={`url(#halo-ivory${n})`}
-        animate={{ opacity: [0.5, 1, 0.5] }}
-        transition={{ duration: 3 + i * 0.5, repeat: Infinity, ease: 'easeInOut', delay: i * 0.6 }}
+        animate={{ 
+          x: [0, Math.random() * 100 - 50, 0],
+          y: [0, Math.random() * 100 - 50, 0],
+          opacity: [0.2, 0.5, 0.2] 
+        }}
+        transition={{ duration: 15 + i * 2, repeat: Infinity, ease: 'easeInOut' }}
+        style={{ cx: `${10 + Math.random() * 80}%`, cy: `${10 + Math.random() * 50}%` }}
       />
     ))}
   </svg>
@@ -111,8 +100,8 @@ const SalleOpera = ({ monument }: { monument: MonumentDef }) => {
           </motion.p>
         </div>
 
-        {/* Right — Opera boxes (stacked) */}
-        <div className="flex flex-col gap-3 items-end justify-center" style={{ minWidth: '160px' }}>
+        {/* Right — Opera boxes (stacked with 3D tilt) */}
+        <div className="flex flex-col gap-4 items-end justify-center" style={{ minWidth: '180px' }}>
           {EDITIONS.map((edition, i) => {
             const isHovered = hoveredBox === i;
             const isEven = i % 2 === 0;
@@ -122,11 +111,11 @@ const SalleOpera = ({ monument }: { monument: MonumentDef }) => {
                 key={edition.year}
                 className="cursor-pointer"
                 style={{
-                  width: '140px',
-                  height: '80px',
-                  background: 'rgba(12,8,5,0.8)',
-                  border: `1px solid ${isHovered ? 'rgba(232,213,196,0.35)' : 'rgba(232,213,196,0.12)'}`,
-                  borderRadius: '2px',
+                  width: '160px',
+                  height: '90px',
+                  background: 'rgba(12,8,5,0.7)',
+                  border: `1px solid ${isHovered ? 'rgba(232,213,196,0.4)' : 'rgba(232,213,196,0.1)'}`,
+                  borderRadius: '1px',
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',

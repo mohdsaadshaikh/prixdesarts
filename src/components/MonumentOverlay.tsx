@@ -43,41 +43,33 @@ const MonumentOverlay = ({ visible, onMonumentClick }: MonumentOverlayProps) => 
               onClick={() => onMonumentClick(m)}
             />
 
-            {/* Luminous ring */}
-            <svg
+            {/* 4-Pointed Star Marker */}
+            <motion.div
               style={{
                 position: 'absolute',
                 left: `${m.pos.x}%`,
                 top: `${m.pos.y}%`,
-                transform: 'translate(-50%, -50%)',
-                width: '64px',
-                height: '64px',
+                x: '-50%',
+                y: '-50%',
                 pointerEvents: 'none',
               }}
-              viewBox="0 0 64 64"
+              animate={{
+                opacity: isHovered ? 1 : 0.6,
+                scale: isHovered ? 1.4 : 1,
+                rotate: isHovered ? 90 : 0,
+              }}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
             >
-              <circle
-                cx="32"
-                cy="32"
-                r="30"
-                fill="none"
-                stroke="#fff8e7"
-                strokeWidth="0.5"
-                opacity={isHovered ? 0.7 : 0.15}
-                style={{
-                  transition: 'opacity 0.4s ease',
-                }}
-              >
-                <animateTransform
-                  attributeName="transform"
-                  type="rotate"
-                  from="0 32 32"
-                  to="360 32 32"
-                  dur={isHovered ? '8s' : '12s'}
-                  repeatCount="indefinite"
-                />
-              </circle>
-            </svg>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                <path d="M12 0L14.5 9.5L24 12L14.5 14.5L12 24L9.5 14.5L0 12L9.5 9.5L12 0Z" />
+              </svg>
+              
+              {/* Subtle Glow */}
+              <motion.div
+                className="absolute inset-0 bg-white blur-md rounded-full opacity-20"
+                animate={{ opacity: isHovered ? 0.4 : 0.1 }}
+              />
+            </motion.div>
 
             {/* Beam on hover */}
             <AnimatePresence>

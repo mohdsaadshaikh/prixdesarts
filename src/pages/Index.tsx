@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import IntroSequence from "@/components/IntroSequence";
 import CityLights from "@/components/CityLights";
 import MonumentOverlay from "@/components/MonumentOverlay";
@@ -73,11 +75,40 @@ export default function Index() {
   // Room navigation state
   const [currentScreen, setCurrentScreen] = useState<'panorama' | 'iris' | 'room'>('panorama');
   const [activeMonument, setActiveMonument] = useState<MonumentDef | null>(null);
+  // Iris transition logic
   const [irisOrigin, setIrisOrigin] = useState({ x: 50, y: 50 });
 
-  const { play, fadeIn, fadeOut } = useAudio();
+  // Custom transition timing for premium feel
+  const IRIS_EASE = [0.72, 0, 0.28, 1];
 
-  // Initialize Lenis
+  const { play, fadeIn, fadeOut } = useAudio();
+  const navigate = useNavigate();
+  const { id: routeId } = useParams();
+
+  // Sync route with state
+  useEffect(() => {
+    if (routeId && MONUMENTS[routeId]) {
+      const target = MONUMENTS[routeId];
+      if (activeMonument?.id !== routeId) {
+        setActiveMonument(target);
+        // If we are already on the panorama, start the transition
+        if (currentScreen === 'panorama') {
+          setIrisOrigin({ x: target.pos.x, y: target.pos.y });
+          setCurrentScreen('iris');
+        } else if (currentScreen === 'room') {
+          // Room-to-room via URL
+          setIrisOrigin({ x: 50, y: 50 });
+          setCurrentScreen('iris');
+        }
+      }
+    } else if (!routeId && currentScreen === 'room') {
+      // Go back to panorama if URL cleared
+      setCurrentScreen('panorama');
+      setActiveMonument(null);
+      fadeOut('room');
+      play('panorama');
+    }
+  }, [routeId, currentScreen]);
   useEffect(() => {
     const lenis = new Lenis({
       duration: 1.2,
@@ -303,6 +334,12 @@ export default function Index() {
         cursor: effectiveMonumentsVisible ? "crosshair" : "default",
       }}
     >
+      {/* Global Grain Texture Overlay */}
+      <div
+        className="fixed inset-0 z-[9999] pointer-events-none opacity-[0.04]"
+        style={{ backgroundImage: 'url("https://grainy-gradients.vercel.app/noise.svg")', filter: 'contrast(150%) brightness(1000%)' }}
+      />
+
       <img
         src={BASE_PAINTING_SRC}
         alt=""
@@ -372,43 +409,97 @@ export default function Index() {
           inset: 0,
           pointerEvents: "none",
           background:
-            "radial-gradient(ellipse 80% 80% at 50% 52%, transparent 0%, transparent 30%, rgba(0,0,0,0.5) 70%, rgba(0,0,0,0.92) 100%)",
+            "radial-gradient(ellipse 100% 100% at 50% 50%, rgba(10, 20, 50, 0.5) 0%, rgba(5, 10, 25, 0.8) 50%, rgba(2, 4, 12, 1) 100%)",
         }}
       />
+
+      {/* Twinkling Starfield */}
+      <div className="absolute inset-0 pointer-events-none opacity-40">
+        {[...Array(80)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute bg-white rounded-full"
+            style={{
+              width: Math.random() * 2 + 0.5 + 'px',
+              height: Math.random() * 2 + 0.5 + 'px',
+              left: Math.random() * 100 + '%',
+              top: Math.random() * 100 + '%',
+            }}
+            animate={{
+              opacity: [0.2, 1, 0.2],
+              scale: [1, 1.2, 1],
+            }}
+            transition={{
+              duration: 2 + Math.random() * 3,
+              repeat: Infinity,
+              delay: Math.random() * 5,
+            }}
+          />
+        ))}
+      </div>
 
       <CityLights active={effectiveLightsActive} />
 
       {effectiveIntroComplete && (
-        <div
+        <motion.div
           className="font-mono-alt uppercase"
           style={{
             position: "absolute",
-            left: "42%",
-            top: "58%",
-            fontSize: "0.6rem",
-            letterSpacing: "0.35em",
-            color: "rgba(240,236,228,0.55)",
-            fontWeight: 300,
+            left: "50%",
+            top: "55%",
+            x: "-50%",
+            fontSize: "0.85rem",
+            letterSpacing: "0.45em",
+            color: "rgba(255,255,255,0.95)",
+            fontWeight: 400,
             pointerEvents: "none",
             zIndex: 20,
             textAlign: "center",
-            lineHeight: "1.8",
-            opacity: 0,
-            animation: "fadePlaque 2s ease forwards 2s",
+            lineHeight: "2.2",
+            textShadow: "0 0 30px rgba(255,255,255,0.25)",
           }}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.5, delay: 2.5 }}
         >
           NOVEMBRE 2026
           <br />
           PARIS
-        </div>
+        </motion.div>
+      )}
+
+      {/* Top-Right Label */}
+      {effectiveIntroComplete && currentScreen === 'panorama' && (
+        <motion.div
+          className="fixed top-8 right-8 text-right z-20 pointer-events-none"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1, delay: 3 }}
+        >
+          <div className="font-display text-2xl tracking-tighter opacity-80">01</div>
+          <div className="font-mono-alt text-[0.55rem] uppercase tracking-[0.4em] opacity-40 mt-1">Noir Velours</div>
+        </motion.div>
+      )}
+
+      {/* Bottom-Left Metadata */}
+      {effectiveIntroComplete && currentScreen === 'panorama' && (
+        <motion.div
+          className="fixed bottom-8 left-8 z-20 pointer-events-none"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1, delay: 3.2 }}
+        >
+          <div className="font-display italic text-lg opacity-80">Le noir respire</div>
+          <div className="font-mono-alt text-[0.45rem] uppercase tracking-[0.25em] opacity-30 mt-1">
+            CORMORANT GARAMOND 300 · GRAIN CANVAS · STAGGER 380MS
+          </div>
+        </motion.div>
       )}
 
       <MonumentOverlay
         visible={effectiveMonumentsVisible && currentScreen === 'panorama'}
         onMonumentClick={(monument: MonumentDef) => {
-          setActiveMonument(monument);
-          setIrisOrigin({ x: monument.pos.x, y: monument.pos.y });
-          setCurrentScreen('iris');
+          navigate(`/room/${monument.id}`);
         }}
       />
       <BottomSignature visible={effectiveLogoVisible && currentScreen === 'panorama'} />
@@ -419,9 +510,7 @@ export default function Index() {
           visible={true}
           activeMonumentId={null}
           onStationClick={(monument: MonumentDef) => {
-            setActiveMonument(monument);
-            setIrisOrigin({ x: monument.pos.x, y: monument.pos.y });
-            setCurrentScreen('iris');
+            navigate(`/room/${monument.id}`);
           }}
           panoramaMode={true}
         />
@@ -443,20 +532,17 @@ export default function Index() {
             monument={activeMonument}
             visible={true}
             onClose={() => {
-              setCurrentScreen('panorama');
-              setActiveMonument(null);
-              fadeOut('room');
-            }}
-            onNavigate={(monumentId: string) => {
-              setActiveMonument(MONUMENTS[monumentId]);
+              navigate('/');
             }}
           />
+          {/* Room-to-Room Navigation */}
           <MetroCapsule
             visible={true}
             activeMonumentId={activeMonument.id}
             onStationClick={(monument: MonumentDef) => {
-              setActiveMonument(monument);
+              navigate(`/room/${monument.id}`);
             }}
+            panoramaMode={false}
           />
         </>
       )}
