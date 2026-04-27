@@ -320,17 +320,21 @@ export default function IntroSequence({ onComplete }: IntroSequenceProps) {
       <button
         onClick={handleSkip}
         style={{
-          position: 'fixed', bottom: '2rem', right: '2.5rem',
-          fontFamily: '"Cormorant Garamond", serif',
+          position: 'fixed', bottom: '2.5rem', right: '3rem',
+          fontFamily: '"Montserrat", sans-serif',
           textTransform: 'uppercase',
-          fontSize: '0.55rem', letterSpacing: '0.2em',
-          color: 'rgba(240,236,228,0.08)',
-          background: 'none', border: 'none', cursor: 'pointer',
+          fontSize: '0.85rem', letterSpacing: '0.3em',
+          color: 'rgba(240,236,228,0.25)',
+          background: 'none', border: '1px solid rgba(240,236,228,0.12)',
+          borderRadius: '30px',
+          padding: '0.6rem 1.8rem',
+          cursor: 'pointer',
           zIndex: 61,
-          transition: 'opacity 0.6s ease, letter-spacing 0.6s ease',
+          backdropFilter: 'blur(4px)',
+          transition: 'all 0.4s ease',
         }}
-        onMouseEnter={e => { e.currentTarget.style.opacity = '0.3'; e.currentTarget.style.letterSpacing = '0.25em'; }}
-        onMouseLeave={e => { e.currentTarget.style.opacity = ''; e.currentTarget.style.letterSpacing = '0.2em'; }}
+        onMouseEnter={e => { e.currentTarget.style.color = 'rgba(240,236,228,0.6)'; e.currentTarget.style.borderColor = 'rgba(240,236,228,0.3)'; }}
+        onMouseLeave={e => { e.currentTarget.style.color = 'rgba(240,236,228,0.25)'; e.currentTarget.style.borderColor = 'rgba(240,236,228,0.12)'; }}
       >
         Skip
       </button>

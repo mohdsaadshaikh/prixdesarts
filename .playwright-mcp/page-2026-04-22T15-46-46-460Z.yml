@@ -1,0 +1,39 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - region "Notifications (F8)":
+      - list
+    - region "Notifications alt+T"
+  - generic [ref=e3]:
+    - generic:
+      - text: NOVEMBRE 2026
+      - text: PARIS
+    - generic:
+      - generic:
+        - img
+      - generic:
+        - img
+      - generic:
+        - img
+      - generic:
+        - img
+      - generic:
+        - img
+    - generic:
+      - img:
+        - generic:
+          - generic: PRIX DES ARTS
+          - generic: "& DE LA CULTURE"
+    - generic [ref=e19]:
+      - generic [ref=e20]: Panorama Debug (Shift+D)
+      - generic [ref=e21]:
+        - button "auto" [ref=e22] [cursor=pointer]
+        - button "intro" [ref=e23] [cursor=pointer]
+        - button "panorama" [ref=e24] [cursor=pointer]
+      - generic [ref=e25]: "innerHeight: 900.0px"
+      - generic [ref=e26]: "visualViewport: 900.0px"
+      - generic [ref=e27]: "documentElement: 900.0px"
+      - generic [ref=e28]: "body: 900.0px"
+      - generic [ref=e29]: "stageRect: 900.0px"
+      - generic [ref=e30]: "layer[0] rect: 936.0px"
+      - generic [ref=e31]: "smooth: -0.993, -0.284"
+      - generic [ref=e32]: "phase: auto"

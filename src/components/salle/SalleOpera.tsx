@@ -1,178 +1,176 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
 import type { MonumentDef } from '@/lib/constants';
-import GalerieInfinie from './GalerieInfinie';
+import RoomBase from './RoomBase';
+import EngravingText from '../EngravingText';
 
-const stagger = (i: number) => 0.6 + i * 0.2;
+const EDITIONS = [
+  { year: 2025, label: 'Édition' },
+  { year: 2024, label: 'Édition' },
+  { year: 2023, label: 'Édition' },
+  { year: 2022, label: 'Édition' },
+  { year: 2021, label: 'Édition' },
+];
+
+/** SVG halos — warm ivory at chandelier positions */
+const ChandelierHalos = () => (
+  <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1000 600" preserveAspectRatio="none">
+    <defs>
+      <radialGradient id="halo-ivory1" cx="50%" cy="10%" r="22%">
+        <stop offset="0%" stopColor="#e8d5c4" stopOpacity="0.18" />
+        <stop offset="100%" stopColor="#e8d5c4" stopOpacity="0" />
+      </radialGradient>
+      <radialGradient id="halo-ivory2" cx="25%" cy="20%" r="15%">
+        <stop offset="0%" stopColor="#e8d5c4" stopOpacity="0.1" />
+        <stop offset="100%" stopColor="#e8d5c4" stopOpacity="0" />
+      </radialGradient>
+      <radialGradient id="halo-ivory3" cx="75%" cy="20%" r="15%">
+        <stop offset="0%" stopColor="#e8d5c4" stopOpacity="0.1" />
+        <stop offset="100%" stopColor="#e8d5c4" stopOpacity="0" />
+      </radialGradient>
+      <radialGradient id="halo-ivory4" cx="30%" cy="40%" r="12%">
+        <stop offset="0%" stopColor="#e8d5c4" stopOpacity="0.06" />
+        <stop offset="100%" stopColor="#e8d5c4" stopOpacity="0" />
+      </radialGradient>
+      <radialGradient id="halo-ivory5" cx="70%" cy="40%" r="12%">
+        <stop offset="0%" stopColor="#e8d5c4" stopOpacity="0.06" />
+        <stop offset="100%" stopColor="#e8d5c4" stopOpacity="0" />
+      </radialGradient>
+      <radialGradient id="halo-ivory6" cx="50%" cy="55%" r="18%">
+        <stop offset="0%" stopColor="#e8d5c4" stopOpacity="0.08" />
+        <stop offset="100%" stopColor="#e8d5c4" stopOpacity="0" />
+      </radialGradient>
+    </defs>
+    {[1, 2, 3, 4, 5, 6].map((n, i) => (
+      <motion.rect
+        key={n}
+        width="1000" height="600"
+        fill={`url(#halo-ivory${n})`}
+        animate={{ opacity: [0.5, 1, 0.5] }}
+        transition={{ duration: 3 + i * 0.5, repeat: Infinity, ease: 'easeInOut', delay: i * 0.6 }}
+      />
+    ))}
+  </svg>
+);
 
 const SalleOpera = ({ monument }: { monument: MonumentDef }) => {
-  const [showGallery, setShowGallery] = useState(false);
-  const [curtainPull, setCurtainPull] = useState(false);
-  const [connectorHovered, setConnectorHovered] = useState(false);
-  const [dotPhases, setDotPhases] = useState([0, 0, 0, 0, 0]);
-
-  // Golden dots pulse
-  useEffect(() => {
-    let raf: number;
-    const animate = () => {
-      const t = Date.now() / 1000;
-      setDotPhases([0, 1, 2, 3, 4].map(i =>
-        0.15 + Math.sin(t * 3 - i * 0.6) * 0.125
-      ));
-      raf = requestAnimationFrame(animate);
-    };
-    raf = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(raf);
-  }, []);
-
-  const handleOpenGallery = () => {
-    setCurtainPull(true);
-    setTimeout(() => setShowGallery(true), 1500);
-  };
-
-  const handleCloseGallery = () => {
-    setShowGallery(false);
-    setCurtainPull(false);
-  };
+  const [hoveredBox, setHoveredBox] = useState<number | null>(null);
 
   return (
-    <div className="fixed inset-0" style={{ zIndex: 1 }}>
-      {/* Curtains */}
-      <div
-        className="fixed top-0 bottom-0 left-0"
-        style={{
-          width: '15vw',
-          zIndex: 3,
-          background: 'linear-gradient(to right, rgba(15,12,10,1) 0%, rgba(15,12,10,0.8) 40%, transparent 100%)',
-          transform: `translateX(${curtainPull ? '-20vw' : connectorHovered ? '-2vw' : '0'})`,
-          transition: 'transform 1.5s cubic-bezier(0.25, 1, 0.5, 1)',
-        }}
-      >
-        <div className="absolute inset-0" style={{
-          background: 'repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(255,255,255,0.003) 2px, rgba(255,255,255,0.003) 3px)',
-        }} />
-      </div>
-      <div
-        className="fixed top-0 bottom-0 right-0"
-        style={{
-          width: '15vw',
-          zIndex: 3,
-          background: 'linear-gradient(to left, rgba(15,12,10,1) 0%, rgba(15,12,10,0.8) 40%, transparent 100%)',
-          transform: `translateX(${curtainPull ? '20vw' : connectorHovered ? '2vw' : '0'})`,
-          transition: 'transform 1.5s cubic-bezier(0.25, 1, 0.5, 1)',
-        }}
-      >
-        <div className="absolute inset-0" style={{
-          background: 'repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(255,255,255,0.003) 2px, rgba(255,255,255,0.003) 3px)',
-        }} />
-      </div>
+    <RoomBase
+      roomKey="opera"
+      photoSrc="/layer_opera.webp"
+      accentColor={monument.accentColor}
+      halos={<ChandelierHalos />}
+    >
+      <div className="w-full h-full flex flex-col md:flex-row items-center px-8 md:px-16">
+        {/* Left — Text content (55%) */}
+        <div className="flex-1 flex flex-col justify-center py-12 md:py-0 md:pr-12" style={{ maxWidth: '480px' }}>
+          <motion.p
+            className="font-mono-alt uppercase"
+            style={{
+              fontSize: '0.55rem',
+              letterSpacing: '0.35em',
+              color: 'rgba(232,213,196,0.4)',
+              fontWeight: 300,
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+          >
+            Salle III · La Scène
+          </motion.p>
 
-      {/* Totem: SILLAGE (extends behind curtains) */}
-      {!showGallery && (
-        <motion.span
-          className="absolute font-display italic pointer-events-none select-none"
-          style={{
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%,-50%)',
-            fontSize: '20vw',
-            color: 'rgba(255,255,255,0.03)',
-            filter: 'blur(4px)',
-            zIndex: 0,
-            whiteSpace: 'nowrap',
-          }}
-          initial={{ opacity: 0, filter: 'blur(20px)' }}
-          animate={{ opacity: 1, filter: 'blur(4px)' }}
-          transition={{ duration: 3 }}
-        >
-          {monument.spaceTotem}
-        </motion.span>
-      )}
+          <h1 className="font-display mt-3" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: 300, color: '#f0ece4' }}>
+            <EngravingText text="Opéra" delay={0.6} />
+            <br />
+            <EngravingText text="Garnier" delay={0.9} />
+          </h1>
 
-      {/* Gallery */}
-      <AnimatePresence>
-        {showGallery && (
-          <GalerieInfinie onBack={handleCloseGallery} />
-        )}
-      </AnimatePresence>
+          <motion.div
+            className="mt-5"
+            style={{ width: '28px', height: '1px', background: '#e8d5c4', opacity: 0.4 }}
+            initial={{ scaleX: 0 }}
+            animate={{ scaleX: 1 }}
+            transition={{ duration: 0.6, delay: 1.2 }}
+          />
 
-      {/* Content (hidden when gallery active) */}
-      {!showGallery && (
-        <div className="fixed inset-0 flex items-center justify-center" style={{ zIndex: 5 }}>
-          <div className="flex flex-col items-center" style={{ maxWidth: '480px', padding: '4rem 2rem' }}>
-            <motion.p className="font-display uppercase text-center"
-              style={{ fontSize: '8px', letterSpacing: '0.35em', color: 'rgba(255,255,255,0.15)' }}
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.9, delay: stagger(0) }}
-            >{monument.spaceSurtitle}</motion.p>
-
-            <motion.h1 className="font-display uppercase text-center mt-3"
-              style={{ fontSize: '11px', letterSpacing: '0.35em', color: 'rgba(255,255,255,0.75)' }}
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.9, delay: stagger(1) }}
-            >{monument.spaceTitle}</motion.h1>
-
-            <motion.p className="font-display italic text-center mt-2"
-              style={{ fontSize: '9px', letterSpacing: '0.2em', color: 'rgba(255,255,255,0.3)' }}
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.9, delay: stagger(2) }}
-            >{monument.spaceSubtitle}</motion.p>
-
-            <motion.div
-              style={{ width: '20px', height: '1px', background: 'rgba(255,255,255,0.08)', margin: '2rem auto' }}
-              initial={{ opacity: 0, scaleX: 0 }} animate={{ opacity: 1, scaleX: 1 }} transition={{ duration: 0.8, delay: stagger(3) }}
-            />
-
-            <motion.div className="text-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.9, delay: stagger(4) }}>
-              {monument.spaceBody.split('\n').map((line, i) => (
-                <p key={i} className="font-display" style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', lineHeight: 2.4, letterSpacing: '0.02em', fontWeight: 300 }}>
-                  {line || '\u00A0'}
-                </p>
-              ))}
-            </motion.div>
-
-            {/* Connector: ARCHIVES VISUELLES - clickable */}
-            <motion.div className="flex flex-col items-center mt-6" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.9, delay: stagger(5) }}>
-              <button
-                className="font-display uppercase text-center bg-transparent border-none cursor-pointer"
-                style={{
-                  fontSize: '9px',
-                  letterSpacing: '0.3em',
-                  color: connectorHovered ? 'rgba(201,168,76,0.6)' : 'rgba(255,255,255,0.85)',
-                  fontWeight: 300,
-                  textShadow: connectorHovered ? '0 0 40px rgba(201,168,76,0.12)' : '0 0 40px rgba(201,168,76,0.03)',
-                  transition: 'all 0.6s ease',
-                }}
-                onMouseEnter={() => { setConnectorHovered(true); }}
-                onMouseLeave={() => { setConnectorHovered(false); }}
-                onClick={handleOpenGallery}
-              >
-                {monument.spaceConnector}
-              </button>
-
-              {/* Connector line */}
-              <div style={{
-                width: connectorHovered ? '200px' : '60px',
-                height: '1px',
-                background: 'rgba(201,168,76,0.08)',
-                marginTop: '0.8rem',
-                transition: 'width 1s ease',
-              }} />
-
-              {/* Golden dots */}
-              <div className="flex gap-3 mt-3">
-                {dotPhases.map((opacity, i) => (
-                  <div key={i} style={{
-                    width: '3px',
-                    height: '3px',
-                    borderRadius: '50%',
-                    background: '#C9A84C',
-                    opacity,
-                  }} />
-                ))}
-              </div>
-            </motion.div>
-          </div>
+          <motion.p
+            className="font-display italic mt-6"
+            style={{
+              fontSize: '0.95rem',
+              lineHeight: 2,
+              color: 'rgba(232,213,196,0.55)',
+              fontWeight: 300,
+            }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 1.4 }}
+          >
+            Cinq éditions. Cinq moments où l'art a basculé dans l'éternité.
+          </motion.p>
         </div>
-      )}
-    </div>
+
+        {/* Right — Opera boxes (stacked) */}
+        <div className="flex flex-col gap-3 items-end justify-center" style={{ minWidth: '160px' }}>
+          {EDITIONS.map((edition, i) => {
+            const isHovered = hoveredBox === i;
+            const isEven = i % 2 === 0;
+
+            return (
+              <motion.div
+                key={edition.year}
+                className="cursor-pointer"
+                style={{
+                  width: '140px',
+                  height: '80px',
+                  background: 'rgba(12,8,5,0.8)',
+                  border: `1px solid ${isHovered ? 'rgba(232,213,196,0.35)' : 'rgba(232,213,196,0.12)'}`,
+                  borderRadius: '2px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transform: `perspective(400px) rotateY(${isHovered ? (isEven ? -4 : 4) : (isEven ? -2 : 2)}deg) scale(${isHovered ? 1.02 : 1})`,
+                  transition: 'all 0.4s ease',
+                  backdropFilter: 'blur(4px)',
+                }}
+                onMouseEnter={() => setHoveredBox(i)}
+                onMouseLeave={() => setHoveredBox(null)}
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 1 + i * 0.12 }}
+              >
+                <span
+                  className="font-display"
+                  style={{
+                    fontSize: '1.6rem',
+                    fontWeight: 300,
+                    color: isHovered ? '#e8d5c4' : 'rgba(232,213,196,0.6)',
+                    letterSpacing: '0.05em',
+                    transition: 'color 0.3s ease',
+                  }}
+                >
+                  {edition.year}
+                </span>
+                <span
+                  className="font-mono-alt uppercase"
+                  style={{
+                    fontSize: '0.4rem',
+                    letterSpacing: '0.3em',
+                    color: 'rgba(232,213,196,0.3)',
+                    fontWeight: 300,
+                    marginTop: '4px',
+                  }}
+                >
+                  {edition.label}
+                </span>
+              </motion.div>
+            );
+          })}
+        </div>
+      </div>
+    </RoomBase>
   );
 };
 

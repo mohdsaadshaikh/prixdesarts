@@ -1,0 +1,29 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - region "Notifications (F8)":
+      - list
+    - region "Notifications alt+T"
+  - generic [ref=e3]:
+    - generic [ref=e19]:
+      - generic [ref=e20]: Panorama Debug (Shift+D)
+      - generic [ref=e21]:
+        - button "auto" [ref=e22] [cursor=pointer]
+        - button "intro" [active] [ref=e23] [cursor=pointer]
+        - button "panorama" [ref=e24] [cursor=pointer]
+      - generic [ref=e25]: "innerHeight: 900.0px"
+      - generic [ref=e26]: "visualViewport: 900.0px"
+      - generic [ref=e27]: "documentElement: 900.0px"
+      - generic [ref=e28]: "body: 900.0px"
+      - generic [ref=e29]: "stageRect: 900.0px"
+      - generic [ref=e30]: "layer[0] rect: 936.0px"
+      - generic [ref=e31]: "smooth: -0.855, -0.857"
+      - generic [ref=e32]: "phase: intro"
+    - generic [ref=e46]:
+      - img
+      - generic [ref=e47]:
+        - generic [ref=e48]: reconnaître
+        - generic [ref=e49]: ce
+        - generic [ref=e50]: qui
+        - generic [ref=e51]: fera
+        - generic [ref=e52]: héritage
+    - button "Skip" [ref=e53] [cursor=pointer]
