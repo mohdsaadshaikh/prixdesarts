@@ -83,7 +83,7 @@ const SalleEiffel = ({ monument }: { monument: MonumentDef }) => {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.4 }}
         >
-          Salle V · La Lumière
+          Salon I — La lumière
         </motion.p>
 
         <h1 className="font-display mt-2" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: 300, color: '#f0ece4' }}>

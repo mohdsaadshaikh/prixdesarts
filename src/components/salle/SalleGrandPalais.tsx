@@ -95,7 +95,7 @@ const SalleGrandPalais = ({ monument }: { monument: MonumentDef }) => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.4 }}
           >
-            Salle IV · L'Empreinte
+            Salon IV — La projection
           </motion.p>
 
           <h1 className="font-display mt-3" style={{ fontSize: 'clamp(2.5rem, 6vw, 4rem)', fontWeight: 300, color: '#c9a35a' }}>

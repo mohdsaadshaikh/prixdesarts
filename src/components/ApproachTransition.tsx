@@ -8,7 +8,7 @@ interface ApproachTransitionProps {
 }
 
 /**
- * Ceremonial approach: progressive black fade + salle title reveal.
+ * Ceremonial approach: progressive black fade + salon title reveal.
  * Duration = monument.approachDuration (5-6s).
  */
 const ApproachTransition = ({ monument, onComplete }: ApproachTransitionProps) => {

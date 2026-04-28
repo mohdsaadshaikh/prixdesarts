@@ -1,13 +1,14 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { CITY_LIGHTS } from "@/lib/constants";
 
 interface IntroSequenceProps {
   onComplete: () => void;
 }
 
-const WORDS = ['reconnaître', 'ce', 'qui', 'fera', 'héritage'];
+const WORDS = ['recognize', 'what', 'will', 'become', 'heritage'];
 
 /**
- * V4 — Le Noir Velours
+ * Intro Sequence — Opening Animation
  * A. Grain animé sur #080808
  * B. Maxime mot par mot (Cormorant Garamond 300 italic)
  * C. Effacement inverse, "." apparaît, héritage expire
@@ -51,22 +52,25 @@ export default function IntroSequence({ onComplete }: IntroSequenceProps) {
 
     const allShown = WORDS.length * 380;
 
-    // Pause 1.8s, then reverse fade (except heritage idx=4)
+    // Pause 1.8s, then fade in exact order: recognize → what → will → become
     const fadeStart = allShown + 1800;
-    for (let i = 3; i >= 0; i--) {
-      later(fadeStart + (3 - i) * 200, () =>
-        setFadingWords(prev => { const n = [...prev]; n[i] = true; return n; })
+    const FADE_ORDER = [0, 1, 2, 3]; // recognize, what, will, become
+    FADE_ORDER.forEach((wordIdx, step) => {
+      later(fadeStart + step * 280, () =>
+        setFadingWords(prev => { const n = [...prev]; n[wordIdx] = true; return n; })
       );
-    }
+    });
 
-    // "." appears right after others gone
-    later(fadeStart + 900, () => setShowPeriod(true));
+    // "." appears right after "become" fades (last of the 4 words)
+    later(fadeStart + 3 * 280 + 400, () => {
+      setShowPeriod(true);
 
-    // Pause 1.2s, heritage expires (1.5s fade)
-    later(fadeStart + 2100, () => setHeritageFading(true));
-
-    // After heritage fully gone, start dot phase
-    later(fadeStart + 3600, () => setPhase('dot'));
+      // At that exact moment, start the dot migration and fade heritage
+      later(50, () => {
+        setPhase('dot');
+        setHeritageFading(true);
+      });
+    });
   }, [phase, later]);
 
   // Dot migration with canvas trail
@@ -89,9 +93,10 @@ export default function IntroSequence({ onComplete }: IntroSequenceProps) {
       startY = r.top + r.height / 2;
     }
 
-    // Target: left bank of Seine
-    const targetX = window.innerWidth * 0.38;
-    const targetY = window.innerHeight * 0.58;
+    // Target: first light of the city
+    const firstLight = CITY_LIGHTS[0];
+    const targetX = window.innerWidth * (firstLight.x / 100);
+    const targetY = window.innerHeight * (firstLight.y / 100);
 
     // Pulse phase: 0.8s
     const pulseStart = performance.now();
@@ -257,7 +262,7 @@ export default function IntroSequence({ onComplete }: IntroSequenceProps) {
         </svg>
 
         {/* Maxim */}
-        {phase === 'maxim' && (
+        {(phase === 'maxim' || phase === 'dot') && (
           <div
             style={{
               position: 'relative', zIndex: 10,
@@ -284,16 +289,21 @@ export default function IntroSequence({ onComplete }: IntroSequenceProps) {
                     transform: `translateY(${visible || fading ? 0 : 8}px)`,
                     transition: `opacity ${fading ? '1.5s' : '1.1s'} ease-out, transform 1.1s ease-out`,
                     display: 'inline-block',
+                    position: isHeritage ? 'relative' as const : undefined,
                   }}
                 >
                   {word}
-                  {isHeritage && showPeriod && (
+                  {isHeritage && (
                     <span
                       ref={periodRef}
                       style={{
+                        position: 'absolute',
+                        left: '100%',
+                        bottom: 0,
                         color: '#f0ece4',
-                        opacity: 1,
+                        opacity: showPeriod && phase !== 'dot' ? 1 : 0,
                         transition: 'opacity 0.3s ease',
+                        pointerEvents: 'none',
                       }}
                     >
                       .
@@ -323,18 +333,16 @@ export default function IntroSequence({ onComplete }: IntroSequenceProps) {
           position: 'fixed', bottom: '2.5rem', right: '3rem',
           fontFamily: '"Montserrat", sans-serif',
           textTransform: 'uppercase',
-          fontSize: '0.85rem', letterSpacing: '0.3em',
-          color: 'rgba(240,236,228,0.25)',
-          background: 'none', border: '1px solid rgba(240,236,228,0.12)',
-          borderRadius: '30px',
-          padding: '0.6rem 1.8rem',
+          fontSize: '0.55rem', letterSpacing: '0.35em',
+          color: 'rgba(240,236,228,0.1)',
+          background: 'none', border: 'none',
+          padding: '0.5rem 1rem',
           cursor: 'pointer',
           zIndex: 61,
-          backdropFilter: 'blur(4px)',
           transition: 'all 0.4s ease',
         }}
-        onMouseEnter={e => { e.currentTarget.style.color = 'rgba(240,236,228,0.6)'; e.currentTarget.style.borderColor = 'rgba(240,236,228,0.3)'; }}
-        onMouseLeave={e => { e.currentTarget.style.color = 'rgba(240,236,228,0.25)'; e.currentTarget.style.borderColor = 'rgba(240,236,228,0.12)'; }}
+        onMouseEnter={e => { e.currentTarget.style.color = 'rgba(240,236,228,0.3)'; }}
+        onMouseLeave={e => { e.currentTarget.style.color = 'rgba(240,236,228,0.1)'; }}
       >
         Skip
       </button>

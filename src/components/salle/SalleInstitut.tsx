@@ -78,7 +78,7 @@ const SalleInstitut = ({ monument }: { monument: MonumentDef }) => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.4 }}
           >
-            Salle II · L'Institution
+            Salon II — La connaissance
           </motion.p>
 
           <h1 className="font-display mt-3" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: 300, color: '#d4b483' }}>

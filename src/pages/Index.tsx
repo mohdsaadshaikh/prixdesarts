@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { useNavigate, useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import IntroSequence from "@/components/IntroSequence";
+import PaintingCanvas from "@/components/PaintingCanvas";
 import CityLights from "@/components/CityLights";
 import MonumentOverlay from "@/components/MonumentOverlay";
 import BottomSignature from "@/components/BottomSignature";
@@ -19,21 +20,8 @@ import type { MonumentDef } from "@/lib/constants";
 import { MONUMENTS } from "@/lib/constants";
 
 const LAYERS = [
-  { src: "/layer_skyline.webp", p: 0.02, dx: 0 },
-  { src: "/layer_sky.webp", p: 0.03, dx: 0 },
   { src: "/layer_clouds.webp", p: 0.05, dx: 0.006 },
-  { src: "/layer_far_city.webp", p: 0.07, dx: 0 },
-  { src: "/layer_mid_city.webp", p: 0.1, dx: 0 },
-  { src: "/layer_eiffel.webp", p: 0.09, dx: 0 },
-  { src: "/layer_institut.webp", p: 0.12, dx: 0 },
-  { src: "/layer_opera.webp", p: 0.12, dx: 0 },
-  { src: "/layer_bridges.webp", p: 0.14, dx: 0 },
-  { src: "/layer_seine.webp", p: 0.16, dx: 0 },
-  { src: "/layer_water.webp", p: 0.16, dx: 0 },
-  { src: "/layer_pyramid_bridge.webp", p: 0.18, dx: 0 },
-  { src: "/layer_boats.webp", p: 0.2, dx: 0.003 },
-  { src: "/layer_pyramide.webp", p: 0.22, dx: 0 },
-  { src: "/layer_foreground.webp", p: 0.26, dx: 0 },
+  { src: "/layer_boats.webp", p: 0.8, dx: 0.003, style: { width: "15%", height: "auto", bottom: "2%", left: "10%", objectFit: "contain" as const } },
 ];
 
 const BW_FILTER = "grayscale(100%) contrast(1.05) brightness(0.82)";
@@ -65,9 +53,11 @@ export default function Index() {
   const mouse = useRef({ x: 0, y: 0 });
   const smooth = useRef({ x: 0, y: 0 });
   const layerRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const markersRef = useRef<HTMLDivElement>(null);
   const [mountNode, setMountNode] = useState<HTMLElement | null>(null);
   const [usePaintingOnly, setUsePaintingOnly] = useState(false);
   const isDev = import.meta.env.DEV;
+  const [hoveredMonument, setHoveredMonument] = useState<string | null>(null);
 
   const [introComplete, setIntroComplete] = useState(false);
   const [lightsActive, setLightsActive] = useState(false);
@@ -80,9 +70,6 @@ export default function Index() {
   // Iris transition logic
   const [irisOrigin, setIrisOrigin] = useState({ x: 50, y: 50 });
 
-  // Custom transition timing for premium feel
-  const IRIS_EASE = [0.72, 0, 0.28, 1];
-
   const { play, fadeIn, fadeOut } = useAudio();
   const navigate = useNavigate();
   const { id: routeId } = useParams();
@@ -93,24 +80,22 @@ export default function Index() {
       const target = MONUMENTS[routeId];
       if (activeMonument?.id !== routeId) {
         setActiveMonument(target);
-        // If we are already on the panorama, start the transition
         if (currentScreen === 'panorama') {
           setIrisOrigin({ x: target.pos.x, y: target.pos.y });
           setCurrentScreen('iris');
         } else if (currentScreen === 'room') {
-          // Room-to-room via URL
           setIrisOrigin({ x: 50, y: 50 });
           setCurrentScreen('iris');
         }
       }
     } else if (!routeId && currentScreen === 'room') {
-      // Go back to panorama if URL cleared
       setCurrentScreen('panorama');
       setActiveMonument(null);
       fadeOut('room');
       play('panorama');
     }
   }, [routeId, currentScreen]);
+
   useEffect(() => {
     const lenis = new Lenis({
       duration: 1.2,
@@ -136,11 +121,15 @@ export default function Index() {
     };
   }, []);
 
-  // Fix: Memoize onComplete to prevent IrisTransition effect from resetting on every mouse move
   const handleIrisComplete = useCallback(() => {
     setCurrentScreen('room');
     play('room');
   }, [play]);
+  
+  const handleMonumentClick = (id: string) => {
+    navigate(`/room/${id}`);
+  };
+
   const [phaseOverride, setPhaseOverride] = useState<PhaseOverride>("auto");
   const [debugOpen, setDebugOpen] = useState(isDev);
   const [layerDebugState, setLayerDebugState] =
@@ -156,7 +145,6 @@ export default function Index() {
     smoothY: 0,
   });
 
-  // Portal mount
   useEffect(() => {
     const el = document.createElement("div");
     el.style.cssText =
@@ -169,7 +157,6 @@ export default function Index() {
     };
   }, []);
 
-  // Keep a stable viewport height even when mobile browser chrome changes.
   useEffect(() => {
     const root = document.documentElement;
     const updateVh = () => {
@@ -194,7 +181,6 @@ export default function Index() {
     };
   }, []);
 
-  // Mouse tracking
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
       mouse.current = {
@@ -206,7 +192,6 @@ export default function Index() {
     return () => window.removeEventListener("mousemove", onMove);
   }, []);
 
-  // Parallax loop
   useEffect(() => {
     let raf = 0;
     const loop = (ts: number) => {
@@ -215,33 +200,49 @@ export default function Index() {
       const sx = smooth.current.x;
       const sy = smooth.current.y;
 
+      const vWidth = window.innerWidth;
+      const vHeight = window.innerHeight;
+
       for (let i = 0; i < LAYERS.length; i++) {
         const el = layerRefs.current[i];
         if (!el) continue;
         const layer = LAYERS[i];
-        const maxX = 2 + layer.p * 40;
-        const maxY = 1 + layer.p * 20;
-        let tx = sx * maxX + layer.dx * ts * 0.04;
+        
+        // Match WebGL displacement factor of 0.05
+        const maxX = vWidth * 0.05 * (layer.p || 0.1);
+        const maxY = vHeight * 0.05 * (layer.p || 0.1);
+        
+        let tx = sx * maxX + (layer.dx || 0) * ts * 0.04;
         let ty = sy * maxY;
 
-        if (layer.src === "/layer_clouds.webp") tx -= ts * 0.0002;
-        if (layer.src === "/layer_boats.webp") tx -= ts * 0.00075;
-        if (
-          layer.src === "/layer_seine.webp" ||
-          layer.src === "/layer_water.webp"
-        ) {
-          ty += Math.sin(ts * 0.000785) * 4;
+        if (layer.src === "/layer_clouds.webp") {
+          tx += Math.sin(ts * 0.00002) * 80 + Math.sin(ts * 0.000047) * 3;
+          ty += Math.sin(ts * 0.000067) * 1.2;
+        }
+        if (layer.src === "/layer_boats.webp") {
+          tx += Math.sin(ts * 0.000015) * 60 + Math.sin(ts * 0.000091) * 2;
+          ty += Math.sin(ts * 0.000073) * 1.5 + Math.sin(ts * 0.000131) * 0.8;
         }
 
         el.style.transform = `translate3d(${tx}px, ${ty}px, 0) scale(1.04)`;
       }
+
+      if (markersRef.current) {
+        // Markers sit at roughly 0.7 depth in the map
+        const p = 0.7;
+        const maxX = vWidth * 0.05 * p;
+        const maxY = vHeight * 0.05 * p;
+        const tx = sx * maxX;
+        const ty = sy * maxY;
+        markersRef.current.style.transform = `translate3d(${tx}px, ${ty}px, 0) scale(1.04)`;
+      }
+
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
   }, []);
 
-  // Intro complete → illumination cascade
   const handleIntroComplete = useCallback(() => {
     if (phaseOverride !== "auto") return;
     setIntroComplete(true);
@@ -252,24 +253,20 @@ export default function Index() {
 
   useEffect(() => {
     if (!isDev) return;
-
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key.toLowerCase() === "d" && event.shiftKey) {
         setDebugOpen((open) => !open);
       }
     };
-
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [isDev]);
 
   useEffect(() => {
     if (!isDev || !debugOpen) return;
-
     const id = window.setInterval(() => {
       const stageRect = mountNode?.getBoundingClientRect();
       const firstLayerRect = layerRefs.current[0]?.getBoundingClientRect();
-
       setDebugStats({
         innerHeight: window.innerHeight,
         viewportHeight: window.visualViewport?.height ?? window.innerHeight,
@@ -281,7 +278,6 @@ export default function Index() {
         smoothY: smooth.current.y,
       });
     }, 200);
-
     return () => window.clearInterval(id);
   }, [debugOpen, isDev, mountNode]);
 
@@ -336,37 +332,17 @@ export default function Index() {
         cursor: effectiveMonumentsVisible ? "crosshair" : "default",
       }}
     >
-      {/* Global Grain Texture Overlay */}
       <div
         className="fixed inset-0 z-[9999] pointer-events-none opacity-[0.04]"
         style={{ backgroundImage: 'url("https://grainy-gradients.vercel.app/noise.svg")', filter: 'contrast(150%) brightness(1000%)' }}
       />
-
-      <img
-        src={BASE_PAINTING_SRC}
-        alt=""
-        draggable={false}
-        style={{
-          position: "absolute",
-          inset: 0,
-          width: "100%",
-          height: "var(--app-vh,100vh)",
-          objectFit: "cover",
-          objectPosition: "center",
-          display: "block",
-          userSelect: "none",
-          pointerEvents: "none",
-          filter: BW_FILTER,
-        }}
-      />
-
+      <PaintingCanvas mouseRef={mouse} />
       {!usePaintingOnly &&
         LAYERS.map((layer, i) => {
           const controls = layerDebugState[layer.src] ?? {
             visible: true,
             opacity: 1,
           };
-
           return (
             <div
               key={layer.src}
@@ -390,32 +366,25 @@ export default function Index() {
                 draggable={false}
                 style={{
                   position: "absolute",
-                  inset: 0,
-                  width: "100%",
-                  height: "var(--app-vh,100vh)",
-                  objectFit: "cover",
-                  objectPosition: "center",
                   display: "block",
                   userSelect: "none",
                   pointerEvents: "none",
                   filter: BW_FILTER,
+                  ...(layer.style || {
+                    inset: 0,
+                    width: "100%",
+                    height: "var(--app-vh,100vh)",
+                    objectFit: "cover",
+                    objectPosition: "center",
+                  })
                 }}
               />
             </div>
           );
         })}
 
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          pointerEvents: "none",
-          background:
-            "radial-gradient(ellipse 100% 100% at 50% 50%, rgba(10, 20, 50, 0.5) 0%, rgba(5, 10, 25, 0.8) 50%, rgba(2, 4, 12, 1) 100%)",
-        }}
-      />
 
-      {/* Twinkling Starfield */}
+
       <div className="absolute inset-0 pointer-events-none opacity-40">
         {[...Array(80)].map((_, i) => (
           <motion.div
@@ -440,64 +409,91 @@ export default function Index() {
         ))}
       </div>
 
-      <CityLights active={effectiveLightsActive} />
+      <div ref={markersRef} className="absolute inset-0" style={{ zIndex: 15 }}>
+        <CityLights active={effectiveLightsActive} />
 
-      {effectiveIntroComplete && (
-        <motion.div
-          className="font-mono-alt uppercase"
-          style={{
-            position: "absolute",
-            left: "50%",
-            top: "55%",
-            x: "-50%",
-            fontSize: "0.85rem",
-            letterSpacing: "0.45em",
-            color: "rgba(255,255,255,0.95)",
-            fontWeight: 400,
-            pointerEvents: "none",
-            zIndex: 20,
-            textAlign: "center",
-            lineHeight: "2.2",
-            textShadow: "0 0 30px rgba(255,255,255,0.25)",
-          }}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.5, delay: 2.5 }}
-        >
-          NOVEMBRE 2026
-          <br />
-          PARIS
-        </motion.div>
-      )}
+        {effectiveIntroComplete && (
+          <motion.div
+            className="font-mono-alt uppercase"
+            style={{
+              position: "absolute",
+              left: "50%",
+              top: "55%",
+              x: "-50%",
+              fontSize: "0.85rem",
+              letterSpacing: "0.45em",
+              color: "rgba(255,255,255,0.95)",
+              fontWeight: 400,
+              pointerEvents: "none",
+              zIndex: 20,
+              textAlign: "center",
+              lineHeight: "2.2",
+              textShadow: "0 0 30px rgba(255,255,255,0.25)",
+            }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.5, delay: 2.5 }}
+          >
+            NOVEMBRE 2026
+            <br />
+            PARIS
+          </motion.div>
+        )}
 
-      {/* HUD Elements (Global) */}
+        <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 30 }}>
+          {effectiveIntroComplete &&
+            Object.values(MONUMENTS).map((monument) => (
+              <div
+                key={monument.id}
+                className="absolute"
+                style={{
+                  left: `${monument.pos.x}%`,
+                  top: `${monument.pos.y}%`,
+                  transform: "translate(-50%, -50%)",
+                }}
+                onMouseEnter={() => setHoveredMonument(monument.id)}
+                onMouseLeave={() => setHoveredMonument(null)}
+              >
+                <div
+                  className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
+                  style={{ width: "4rem", height: "4rem", cursor: "pointer" }}
+                  onClick={() => handleMonumentClick(monument.id)}
+                />
+
+                <motion.div
+                  className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none"
+                  style={{ border: "1px solid rgba(255,248,231,0.15)" }}
+                  initial={{ width: "3.5rem", height: "3.5rem" }}
+                  animate={{
+                    width: hoveredMonument === monument.id ? "4rem" : "3.5rem",
+                    height: hoveredMonument === monument.id ? "4rem" : "3.5rem",
+                    borderColor:
+                      hoveredMonument === monument.id
+                        ? "rgba(255,248,231,0.4)"
+                        : "rgba(255,248,231,0.15)",
+                  }}
+                  transition={{ duration: 0.4, ease: "easeOut" }}
+                />
+
+                <motion.div
+                  className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none"
+                  style={{
+                    width: "4rem",
+                    height: "4rem",
+                    background:
+                      "radial-gradient(circle, rgba(255,248,231,0.1) 0%, transparent 60%)",
+                  }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: hoveredMonument === monument.id ? 1 : 0 }}
+                  transition={{ duration: 0.3 }}
+                />
+              </div>
+            ))}
+        </div>
+      </div>
+
       {effectiveIntroComplete && (
         <>
-          {/* Top-Right Label */}
-          <motion.div
-            className="fixed top-8 right-8 text-right z-[100] pointer-events-none"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: currentScreen === 'panorama' ? 1 : 0.4 }}
-            transition={{ duration: 1 }}
-          >
-            <div className="font-display text-2xl tracking-tighter opacity-80">01</div>
-            <div className="font-mono-alt text-[0.55rem] uppercase tracking-[0.4em] opacity-40 mt-1">Noir Velours</div>
-          </motion.div>
-
-          {/* Bottom-Left Metadata */}
-          <motion.div
-            className="fixed bottom-8 left-8 z-[100] pointer-events-none"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: currentScreen === 'panorama' ? 1 : 0.4 }}
-            transition={{ duration: 1 }}
-          >
-            <div className="font-display italic text-lg opacity-80">le noir respire</div>
-            <div className="font-mono-alt text-[0.45rem] uppercase tracking-[0.25em] opacity-30 mt-1">
-              CORMORANT GARAMOND 300 · GRAIN CANVAS · STAGGER 380MS
-            </div>
-          </motion.div>
-
-          {/* Audio Visualizer (Volume Bars) */}
           <div className="fixed bottom-12 right-12 z-[100]">
             <AudioVisualizer label="OPÉRA SCÈNE" active={true} />
           </div>

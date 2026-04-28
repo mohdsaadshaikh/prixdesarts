@@ -85,7 +85,7 @@ const SalleLouvre = ({ monument }: { monument: MonumentDef }) => {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.4 }}
           >
-            Salle I · La Consécration
+            Salon V — l'héritage
           </motion.p>
           <h1 className="font-display mt-2" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: 300, color: '#f0ece4' }}>
             <EngravingText text="Pyramide" delay={0.6} />
