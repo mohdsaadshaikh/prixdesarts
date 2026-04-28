@@ -55,7 +55,7 @@ const RoomBase = ({ roomKey, photoSrc, accentColor, children, halos }: RoomBaseP
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
-          filter: 'grayscale(80%) contrast(1.1) brightness(0.5)',
+          filter: 'grayscale(40%) contrast(1.3) brightness(0.75)',
           willChange: 'transform',
           transform: `translate3d(${mouseOffset.x}px, ${mouseOffset.y}px, 0) scale(1.1)`,
           transition: 'transform 0.4s cubic-bezier(0.23, 1, 0.32, 1)',

@@ -36,7 +36,7 @@ const SalleGrandPalais = ({ monument }: { monument: MonumentDef }) => {
   return (
     <RoomBase
       roomKey="grandPalais"
-      photoSrc="/layer_pyramide.webp"
+      photoSrc="/layer_grandpalais.webp"
       accentColor={monument.accentColor}
       halos={<VerriereHalos />}
     >
