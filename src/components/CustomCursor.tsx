@@ -7,8 +7,8 @@ const CustomCursor = () => {
   const cursorY = useMotionValue(-100);
 
   const springConfig = { damping: 25, stiffness: 200 };
-  const scaleX = useSpring(useMotionValue(1), springConfig);
-  const scaleY = useSpring(useMotionValue(1), springConfig);
+  const springX = useSpring(cursorX, springConfig);
+  const springY = useSpring(cursorY, springConfig);
 
   useEffect(() => {
     const moveCursor = (e: MouseEvent) => {
@@ -18,12 +18,12 @@ const CustomCursor = () => {
 
     const handleHover = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      const isClickable = 
-        target.tagName === 'BUTTON' || 
-        target.tagName === 'A' || 
+      const isClickable =
+        target.tagName === 'BUTTON' ||
+        target.tagName === 'A' ||
         target.closest('.cursor-pointer') ||
         target.onclick;
-      
+
       setIsHovered(!!isClickable);
     };
 

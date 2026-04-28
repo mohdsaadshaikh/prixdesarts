@@ -11,6 +11,8 @@ import MonumentSpace from "@/components/MonumentSpace";
 import MetroCapsule from "@/components/MetroCapsule";
 import GrainOverlay from "@/components/GrainOverlay";
 import CustomCursor from "@/components/CustomCursor";
+import AudioVisualizer from "@/components/AudioVisualizer";
+import StaggeredLines from "@/components/StaggeredLines";
 import { useAudio } from "@/hooks/useAudio";
 import Lenis from "@studio-freight/lenis";
 import type { MonumentDef } from "@/lib/constants";
@@ -468,32 +470,50 @@ export default function Index() {
         </motion.div>
       )}
 
-      {/* Top-Right Label */}
-      {effectiveIntroComplete && currentScreen === 'panorama' && (
-        <motion.div
-          className="fixed top-8 right-8 text-right z-20 pointer-events-none"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 3 }}
-        >
-          <div className="font-display text-2xl tracking-tighter opacity-80">01</div>
-          <div className="font-mono-alt text-[0.55rem] uppercase tracking-[0.4em] opacity-40 mt-1">Noir Velours</div>
-        </motion.div>
-      )}
+      {/* HUD Elements (Global) */}
+      {effectiveIntroComplete && (
+        <>
+          {/* Top-Right Label */}
+          <motion.div
+            className="fixed top-8 right-8 text-right z-[100] pointer-events-none"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: currentScreen === 'panorama' ? 1 : 0.4 }}
+            transition={{ duration: 1 }}
+          >
+            <div className="font-display text-2xl tracking-tighter opacity-80">01</div>
+            <div className="font-mono-alt text-[0.55rem] uppercase tracking-[0.4em] opacity-40 mt-1">Noir Velours</div>
+          </motion.div>
 
-      {/* Bottom-Left Metadata */}
-      {effectiveIntroComplete && currentScreen === 'panorama' && (
-        <motion.div
-          className="fixed bottom-8 left-8 z-20 pointer-events-none"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 3.2 }}
-        >
-          <div className="font-display italic text-lg opacity-80">Le noir respire</div>
-          <div className="font-mono-alt text-[0.45rem] uppercase tracking-[0.25em] opacity-30 mt-1">
-            CORMORANT GARAMOND 300 · GRAIN CANVAS · STAGGER 380MS
+          {/* Bottom-Left Metadata */}
+          <motion.div
+            className="fixed bottom-8 left-8 z-[100] pointer-events-none"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: currentScreen === 'panorama' ? 1 : 0.4 }}
+            transition={{ duration: 1 }}
+          >
+            <div className="font-display italic text-lg opacity-80">le noir respire</div>
+            <div className="font-mono-alt text-[0.45rem] uppercase tracking-[0.25em] opacity-30 mt-1">
+              CORMORANT GARAMOND 300 · GRAIN CANVAS · STAGGER 380MS
+            </div>
+          </motion.div>
+
+          {/* Audio Visualizer (Volume Bars) */}
+          <div className="fixed bottom-12 right-12 z-[100]">
+            <AudioVisualizer label="OPÉRA SCÈNE" active={true} />
           </div>
-        </motion.div>
+
+          {/* Decorative Staggered Lines — removed to avoid overlap above MetroCapsule */}
+
+          {/* Metro Capsule (Dot Progress) */}
+          <MetroCapsule
+            visible={currentScreen !== 'iris'}
+            activeMonumentId={currentScreen === 'room' ? activeMonument?.id : null}
+            onStationClick={(monument: MonumentDef) => {
+              navigate(`/room/${monument.id}`);
+            }}
+            panoramaMode={currentScreen === 'panorama'}
+          />
+        </>
       )}
 
       <MonumentOverlay
@@ -504,17 +524,6 @@ export default function Index() {
       />
       <BottomSignature visible={effectiveLogoVisible && currentScreen === 'panorama'} />
 
-      {/* Metro Capsule on panorama */}
-      {effectiveMonumentsVisible && currentScreen === 'panorama' && (
-        <MetroCapsule
-          visible={true}
-          activeMonumentId={null}
-          onStationClick={(monument: MonumentDef) => {
-            navigate(`/room/${monument.id}`);
-          }}
-          panoramaMode={true}
-        />
-      )}
 
       {/* Iris Transition */}
       {currentScreen === 'iris' && activeMonument && (
@@ -527,24 +536,13 @@ export default function Index() {
 
       {/* Room */}
       {currentScreen === 'room' && activeMonument && (
-        <>
-          <MonumentSpace
-            monument={activeMonument}
-            visible={true}
-            onClose={() => {
-              navigate('/');
-            }}
-          />
-          {/* Room-to-Room Navigation */}
-          <MetroCapsule
-            visible={true}
-            activeMonumentId={activeMonument.id}
-            onStationClick={(monument: MonumentDef) => {
-              navigate(`/room/${monument.id}`);
-            }}
-            panoramaMode={false}
-          />
-        </>
+        <MonumentSpace
+          monument={activeMonument}
+          visible={true}
+          onClose={() => {
+            navigate('/');
+          }}
+        />
       )}
 
       {/* Grain overlay — always on top */}

@@ -40,22 +40,22 @@ const RoomBase = ({ roomKey, photoSrc, accentColor, children, halos }: RoomBaseP
       style={{ background: '#0a0808' }}
       data-room={roomKey}
     >
-      {/* Layer 1: B&W Room photo */}
+      {/* Layer 1: Room photo (Full Screen) */}
       <motion.div
         ref={photoRef}
-        className="absolute inset-0"
+        className="absolute inset-0 z-0"
         style={{
           backgroundImage: `url(${photoSrc})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          filter: 'grayscale(100%) contrast(1.05) brightness(0.35)',
+          filter: 'grayscale(80%) contrast(1.1) brightness(0.5)',
           willChange: 'transform',
-          transform: `translate3d(${mouseOffset.x}px, ${mouseOffset.y}px, 0) scale(1.04)`,
-          transition: 'transform 0.3s ease-out',
+          transform: `translate3d(${mouseOffset.x}px, ${mouseOffset.y}px, 0) scale(1.1)`,
+          transition: 'transform 0.4s cubic-bezier(0.23, 1, 0.32, 1)',
         }}
         initial={{ opacity: 0 }}
-        animate={{ opacity: 0.42 }}
-        transition={{ duration: 1 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1.5 }}
       />
 
       {/* Vignette overlay */}

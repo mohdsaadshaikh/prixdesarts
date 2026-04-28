@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import type { MonumentDef } from '@/lib/constants';
+import StaggeredLines from './StaggeredLines';
 
 interface IrisTransitionProps {
   monument: MonumentDef;
@@ -140,17 +141,9 @@ const IrisTransition = ({ monument, originPos, onComplete }: IrisTransitionProps
               >
                 {monument.spaceTitle}
               </motion.span>
-              <motion.div
-                style={{
-                  width: '30px',
-                  height: '1px',
-                  background: monument.accentColor,
-                  opacity: 0.4,
-                }}
-                initial={{ opacity: 0, scaleX: 0 }}
-                animate={{ opacity: 0.4, scaleX: 1 }}
-                transition={{ duration: 0.6, delay: 0.24 }}
-              />
+              <div className="mt-4 opacity-60">
+                <StaggeredLines />
+              </div>
             </div>
           )}
         </div>
