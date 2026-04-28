@@ -9,6 +9,11 @@ interface MetroCapsuleProps {
   panoramaMode?: boolean;
 }
 
+/**
+ * "Plan Lumière" — floating metro-style navigation capsule.
+ * On panorama: discreet (opacity 0.5), lifts on hover.
+ * In rooms: full opacity with active station pulse.
+ */
 const MetroCapsule = ({ visible, activeMonumentId, onStationClick, panoramaMode = false }: MetroCapsuleProps) => {
   const [hovered, setHovered] = useState(false);
   const [hoveredStation, setHoveredStation] = useState<string | null>(null);
@@ -17,176 +22,149 @@ const MetroCapsule = ({ visible, activeMonumentId, onStationClick, panoramaMode 
 
   const stations = MONUMENT_ORDER.map(id => MONUMENTS[id]);
 
-  // Map to shorter names for the UI
-  const getShortName = (id: string) => {
-    switch (id) {
-      case 'eiffel': return 'EIFFEL TOWER';
-      case 'institut': return 'INSTITUT';
-      case 'opera': return 'OPÉRA';
-      case 'grandPalais': return 'GRAND PALAIS';
-      case 'louvre': return 'LOUVRE';
-      default: return id.toUpperCase();
-    }
-  };
-
   return (
     <motion.div
       className="fixed z-[45]"
       style={{
-        bottom: '4vh',
+        bottom: '3vh',
         left: '50%',
         x: '-50%',
       }}
-      initial={{ opacity: 0, y: 30 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{
-        opacity: panoramaMode ? (hovered ? 0.9 : 0.4) : 1,
-        y: 0,
+        opacity: panoramaMode ? (hovered ? 0.8 : 0.25) : 1,
+        y: panoramaMode && hovered ? -4 : 0,
       }}
-      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.3, ease: 'easeOut' }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => { setHovered(false); setHoveredStation(null); }}
     >
-      {/* Outer Glow Container */}
+      {/* Capsule */}
       <div
-        className="relative px-12 py-8 group"
+        style={{
+          width: '400px',
+          height: '52px',
+          borderRadius: '40px',
+          background: 'rgba(8,8,8,0.85)',
+          backdropFilter: 'blur(12px)',
+          border: '1px solid rgba(255,255,255,0.08)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'relative',
+          padding: '0 30px',
+        }}
       >
-        {/* Main Capsule Body */}
-        <div
+        {/* Line name */}
+        <span
+          className="font-mono-alt uppercase"
           style={{
-            width: '680px',
-            height: '42px',
-            borderRadius: '100px',
-            background: 'rgba(10, 10, 10, 0.7)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.15)',
-            boxShadow: 'inset 0 0 15px rgba(255,255,255,0.05), 0 10px 40px rgba(0,0,0,0.4)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '0 40px',
-            position: 'relative',
+            fontSize: '0.55rem',
+            letterSpacing: '0.3em',
+            color: 'rgba(255,255,255,0.35)',
+            fontWeight: 300,
+            position: 'absolute',
+            top: '8px',
           }}
         >
-          {/* Internal Glow Rail */}
+          Ligne des Arts
+        </span>
+
+        {/* Line + stations */}
+        <div
+          style={{
+            position: 'relative',
+            width: '100%',
+            height: '2px',
+            marginTop: '6px',
+            display: 'flex',
+            alignItems: 'center',
+          }}
+        >
+          {/* Line */}
           <div
             style={{
               position: 'absolute',
-              left: '40px',
-              right: '40px',
-              height: '3px',
-              background: 'rgba(255, 255, 255, 0.08)',
-              borderRadius: '2px',
+              left: 0,
+              right: 0,
+              height: '1.5px',
+              background: 'rgba(255,255,255,0.3)',
             }}
           />
 
-          {/* Active Line Segment */}
-          {/* This would require calculating the progress based on activeMonumentId */}
-          
-          {/* Stations Mapping */}
+          {/* Stations */}
           {stations.map((station, i) => {
             const isActive = activeMonumentId === station.id;
-            const isHovered = hoveredStation === station.id;
-            const isClickable = true;
+            const isStationHovered = hoveredStation === station.id;
+            const leftPct = (i / (stations.length - 1)) * 100;
 
             return (
               <div
                 key={station.id}
-                className="relative flex flex-col items-center"
-                style={{ flex: 1 }}
+                style={{
+                  position: 'absolute',
+                  left: `${leftPct}%`,
+                  transform: 'translate(-50%, -50%)',
+                  top: '50%',
+                }}
               >
-                {/* Station Node */}
+                {/* Station tooltip */}
+                <AnimatePresence>
+                  {isStationHovered && (
+                    <motion.span
+                      className="font-display italic"
+                      style={{
+                        position: 'absolute',
+                        bottom: '22px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        fontSize: '0.75rem',
+                        letterSpacing: '0.15em',
+                        color: '#f0ece4',
+                        whiteSpace: 'nowrap',
+                        pointerEvents: 'none',
+                      }}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 0.8 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      {station.buildingName}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+
+                {/* Station circle */}
                 <div
-                  className="relative cursor-pointer transition-all duration-500"
                   style={{
-                    width: '18px',
-                    height: '18px',
-                    zIndex: 2,
+                    width: '10px',
+                    height: '10px',
+                    borderRadius: '50%',
+                    border: `1.5px solid ${isActive ? '#ffffff' : 'rgba(255,255,255,0.4)'}`,
+                    background: isActive ? '#ffffff' : 'transparent',
+                    cursor: 'pointer',
+                    pointerEvents: 'auto',
+                    boxShadow: isActive ? '0 0 0 4px rgba(255,255,255,0.15)' : 'none',
+                    animation: isActive ? 'pulse-ring 2s infinite' : 'none',
+                    transition: 'all 0.3s ease',
                   }}
                   onMouseEnter={() => setHoveredStation(station.id)}
                   onMouseLeave={() => setHoveredStation(null)}
                   onClick={() => onStationClick(station)}
-                >
-                  {/* Outer Ring */}
-                  <div
-                    style={{
-                      position: 'absolute',
-                      inset: 0,
-                      borderRadius: '50%',
-                      border: `1.5px solid ${isActive || isHovered ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.3)'}`,
-                      boxShadow: isActive || isHovered ? '0 0 15px rgba(255,255,255,0.4)' : 'none',
-                      transition: 'all 0.4s ease',
-                    }}
-                  />
-                  
-                  {/* Inner Core */}
-                  <div
-                    style={{
-                      position: 'absolute',
-                      inset: '4px',
-                      borderRadius: '50%',
-                      background: isActive || isHovered ? '#ffffff' : 'rgba(255,255,255,0.2)',
-                      boxShadow: isActive || isHovered ? '0 0 10px #ffffff' : 'none',
-                      transition: 'all 0.4s ease',
-                    }}
-                  />
-
-                  {/* Pulsing Aura for active */}
-                  {isActive && (
-                    <motion.div
-                      style={{
-                        position: 'absolute',
-                        inset: '-10px',
-                        borderRadius: '50%',
-                        background: 'radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%)',
-                        zIndex: -1,
-                      }}
-                      animate={{ scale: [1, 1.4, 1], opacity: [0.3, 0.1, 0.3] }}
-                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                    />
-                  )}
-                </div>
-
-                {/* Label */}
-                <div
-                  className="absolute"
-                  style={{
-                    top: '45px',
-                    whiteSpace: 'nowrap',
-                    textAlign: 'center',
-                    pointerEvents: 'none',
-                  }}
-                >
-                  <span
-                    className="font-mono text-[9px] tracking-[0.25em] uppercase transition-all duration-500"
-                    style={{
-                      color: isActive || isHovered ? '#ffffff' : 'rgba(255,255,255,0.4)',
-                      textShadow: isActive || isHovered ? '0 0 10px rgba(255,255,255,0.5)' : 'none',
-                      opacity: panoramaMode ? (hovered ? 1 : 0.5) : 1,
-                    }}
-                  >
-                    {getShortName(station.id)}
-                  </span>
-                </div>
+                />
               </div>
             );
           })}
-
-          {/* Glow Line Connector (Active progress) */}
-          <div
-            style={{
-              position: 'absolute',
-              left: '40px',
-              right: '40px',
-              height: '3px',
-              background: 'linear-gradient(90deg, rgba(255,255,255,0.8), rgba(255,255,255,0.2))',
-              borderRadius: '2px',
-              zIndex: 1,
-              pointerEvents: 'none',
-              maskImage: 'linear-gradient(to right, black 100%, transparent 100%)', // We'll animate this
-            }}
-          />
         </div>
       </div>
+
+      <style>{`
+        @keyframes pulse-ring {
+          0%, 100% { box-shadow: 0 0 0 4px rgba(255,255,255,0.15); }
+          50% { box-shadow: 0 0 0 6px rgba(255,255,255,0.08); }
+        }
+      `}</style>
     </motion.div>
   );
 };
