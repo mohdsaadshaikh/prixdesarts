@@ -43,11 +43,18 @@ const RoomBase = ({ roomKey, photoSrc, accentColor, children, halos }: RoomBaseP
       {/* Layer 1: Room photo (Full Screen) */}
       <motion.div
         ref={photoRef}
-        className="absolute inset-0 z-0"
+        className="absolute z-0"
         style={{
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100%',
+          height: '100%',
           backgroundImage: `url(${photoSrc})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
           filter: 'grayscale(80%) contrast(1.1) brightness(0.5)',
           willChange: 'transform',
           transform: `translate3d(${mouseOffset.x}px, ${mouseOffset.y}px, 0) scale(1.1)`,

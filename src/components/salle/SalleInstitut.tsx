@@ -113,21 +113,6 @@ const SalleInstitut = ({ monument }: { monument: MonumentDef }) => {
 
         {/* Right — Vertical timeline (40%) */}
         <div className="flex-shrink-0 flex flex-col items-end justify-center relative" style={{ width: '40%', minWidth: '200px' }}>
-          {/* Vertical connecting line */}
-          <motion.div
-            className="absolute"
-            style={{
-              right: 'calc(50% + 20px)',
-              top: '10%',
-              bottom: '10%',
-              width: '1px',
-              background: 'rgba(212,180,131,0.12)',
-            }}
-            initial={{ scaleY: 0 }}
-            animate={{ scaleY: 1 }}
-            transition={{ duration: 1.2, delay: 0.6 }}
-          />
-
           {EDITIONS.map((edition, i) => {
             const isCurrent = edition.year === 2026;
             const sizes = ['2rem', '2.2rem', '2.5rem', '3rem', '4.5rem'];
@@ -137,27 +122,13 @@ const SalleInstitut = ({ monument }: { monument: MonumentDef }) => {
               <motion.div
                 key={edition.year}
                 className="relative flex items-center mb-4"
-                style={{ width: '100%', justifyContent: 'flex-end' }}
+                style={{ width: '100%', justifyContent: 'flex-end', paddingRight: '0' }}
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.6, delay: 0.8 + i * 0.15 }}
               >
-                {/* Dot on the line */}
-                <div
-                  className="absolute"
-                  style={{
-                    right: 'calc(50% + 16px)',
-                    width: isCurrent ? '8px' : '4px',
-                    height: isCurrent ? '8px' : '4px',
-                    borderRadius: '50%',
-                    background: '#d4b483',
-                    opacity: opacities[i],
-                    boxShadow: isCurrent ? '0 0 12px rgba(212,180,131,0.4), 0 0 24px rgba(212,180,131,0.2)' : 'none',
-                  }}
-                />
-
-                {/* Year */}
-                <div className="text-right pr-4" style={{ width: '50%' }}>
+                {/* Year - Full right */}
+                <div className="text-right" style={{ width: '100%' }}>
                   <span
                     className="font-display"
                     style={{

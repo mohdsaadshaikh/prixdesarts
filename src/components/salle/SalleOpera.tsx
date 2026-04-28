@@ -52,7 +52,7 @@ const SalleOpera = ({ monument }: { monument: MonumentDef }) => {
       accentColor={monument.accentColor}
       halos={<ChandelierHalos />}
     >
-      <div className="w-full h-full flex flex-col md:flex-row items-center px-8 md:px-16">
+      <div className="w-full h-full flex flex-col md:flex-row items-stretch px-8 md:px-16">
         {/* Left — Text content (55%) */}
         <div className="flex-1 flex flex-col justify-center py-12 md:py-0 md:pr-12" style={{ maxWidth: '480px' }}>
           <motion.p
@@ -100,8 +100,8 @@ const SalleOpera = ({ monument }: { monument: MonumentDef }) => {
           </motion.p>
         </div>
 
-        {/* Right — Opera boxes (stacked with 3D tilt) */}
-        <div className="flex flex-col gap-4 items-end justify-center" style={{ minWidth: '180px' }}>
+        {/* Right — Opera boxes (full right alignment) */}
+        <div className="flex-shrink-0 flex flex-col items-end justify-center" style={{ width: '40%', minWidth: '200px' }}>
           {EDITIONS.map((edition, i) => {
             const isHovered = hoveredBox === i;
             const isEven = i % 2 === 0;
@@ -109,7 +109,7 @@ const SalleOpera = ({ monument }: { monument: MonumentDef }) => {
             return (
               <motion.div
                 key={edition.year}
-                className="cursor-pointer"
+                className="cursor-pointer mb-3"
                 style={{
                   width: '160px',
                   height: '90px',
